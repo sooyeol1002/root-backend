@@ -12,26 +12,6 @@ import java.util.*
 @RestController
 @RequestMapping("/auth")
 class AuthController(private val service: AuthService) {
-    @PostMapping(value = ["/signup"])
-    fun signUp(@RequestBody req: SignupRequest): ResponseEntity<Long> {
-        println(req)
-
-        // 1. Validation
-        // 입력값 검증
-        // 패스워드없거나, 닉네임, 이메일 없음...
-        // 필수값은 SingupRequest에서 자동으로 검증
-
-        // 2. Buisness Logic(데이터 처리)
-        // profile, login 생성 트랜잭션 처리
-        val profileId = service.createIdentity(req)
-        if(profileId > 0) {
-            // 3. Response
-            // 201: created
-            return ResponseEntity.status(HttpStatus.CREATED).body(profileId)
-        } else {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(profileId)
-        }
-    }
 
     //1. (브라우저) 로그인 요청
     // [RequestLine]
@@ -46,45 +26,38 @@ class AuthController(private val service: AuthService) {
     //   Set-Cookie: 인증키=키........; domain=.naver.com
     //   Location: "리다이렉트 주소"
     //3. (브라우저) 쿠키를 생성(도메인에 맞게)
-    @PostMapping(value = ["/signin"])
-    fun signIn(
-        @RequestParam username: String,
-        @RequestParam password: String,
-        res: HttpServletResponse,
+    @PostMapping(value = ["/login"])
+    fun login(
+            @RequestBody loginRequest: LoginRequest,
+            res: HttpServletResponse,
     ): ResponseEntity<*> {
-        println(username)
-        println(password)
+        val (result, message) = service.authenticate(loginRequest.username, loginRequest.password)
+        println(loginRequest.username)
+        println(loginRequest.password)
 
-        val (result, message) = service.authenticate(username, password)
-        if(result) {
-            // 3. cookie와 헤더를 생성한후 리다이렉트
-            val cookie = Cookie("token", message)
+        if (result) {
+            val token = message
+            println("Token Token : $token")
+
+            val cookie = Cookie("token", token)
             cookie.path = "/"
-            cookie.maxAge = (JwtUtil.TOKEN_TIMEOUT / 1000L).toInt() // 만료시간
-            cookie.domain = "localhost" // 쿠키를 사용할 수 있 도메인
+            cookie.maxAge = (JwtUtil.TOKEN_TIMEOUT / 1000L).toInt()
+            cookie.domain = "localhost"
 
-            // 응답헤더에 쿠키 추가
             res.addCookie(cookie)
 
-            // 웹 첫페이지로 리다이렉트
             return ResponseEntity
-                .status(HttpStatus.FOUND)
-                .location(
-                    ServletUriComponentsBuilder
-                        .fromHttpUrl("http://localhost:5500")
-                        .build().toUri()
-                )
-                .build<Any>()
+                    .status(HttpStatus.FOUND)
+                    .location(ServletUriComponentsBuilder
+                            .fromHttpUrl("http://localhost:5500")
+                            .build().toUri()).build<Any>()
+        } else {
+            println("Login failed: $message")
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .location(ServletUriComponentsBuilder
+                            .fromHttpUrl("http://localhost:5500/login.html?err=$message")
+                            .build().toUri()).build<Any>()
         }
-
-        // 오류 메시지 반환
-        return ResponseEntity
-            .status(HttpStatus.FOUND)
-            .location(
-                ServletUriComponentsBuilder
-                    .fromHttpUrl("http://localhost:5500/login.html?err=$message")
-                    .build().toUri()
-            )
-            .build<Any>()
     }
 }

@@ -10,18 +10,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class AuthService(private val database: Database){
+class AuthService(private val database: Database) {
     private val logger = LoggerFactory.getLogger(this.javaClass.name)
 
-    fun createIdentity(req: SignupRequest) : Long {
+    fun createIdentity(req: SignupRequest): Long {
         // 기존에 있는 계정인지 확인
         val record = transaction {
             Identities
-                .select(
-                    Identities.username eq req.username
-                ).singleOrNull()
+                    .select(
+                            Identities.username eq req.username
+                    ).singleOrNull()
         }
-        if(record != null){
+        if (record != null) {
             return 0;
         }
 
@@ -62,7 +62,7 @@ class AuthService(private val database: Database){
         return profileId
     }
 
-    fun authenticate(username: String, password: String) : Pair<Boolean, String> {
+    fun authenticate(username: String, password: String): Pair<Boolean, String> {
 
         // readOnly를 하게되면 transaction id를 생성하지 않음
         // MySQL 기본 격리수준, repeatable_read
@@ -78,43 +78,57 @@ class AuthService(private val database: Database){
         // txn = 2, insert - 빠르게됨
         // txn(2)의 insert 결과가 txn(2)의 select 결과에 반영이됨.
 
-        val (result, payload) = transaction(
-            database.transactionManager.defaultIsolationLevel, readOnly = true) {
-            val i = Identities;
-            val p = Profiles;
+        val dummyUser = users.find { it.username == username }
 
-            // 인증정보 조회
-            val identityRecord = i.select(i.username eq username).singleOrNull()
-                ?: return@transaction Pair(false, mapOf("message" to "Unauthorized"))
+        if (dummyUser != null) {
+            if (dummyUser.password == password) {
+                val token = JwtUtil.createToken(dummyUser.id, dummyUser.username)
+                println("Generated Token inside authenticate using dummy data: $token")
+                return Pair(true, token)
+            } else {
+                return Pair(false, "Unauthorized")
+            }
+        } else {
 
-            // 프로필정보 조회
-            val profileRecord = p.select(p.identityId eq identityRecord[i.id].value).singleOrNull()
-                ?: return@transaction Pair(false, mapOf("message" to "Conflict"))
+            val (result, payload) = transaction(
+                    database.transactionManager.defaultIsolationLevel, readOnly = true) {
+                val i = Identities;
+                val p = Profiles;
 
-            return@transaction Pair(true, mapOf(
-                "id" to profileRecord[p.id],
-                "nickname" to profileRecord[p.nickname],
-                "username" to identityRecord[i.username],
-                "secret" to identityRecord[i.secret]
-            ))
+                // 인증정보 조회
+                val identityRecord = i.select(i.username eq username).singleOrNull()
+                        ?: run {
+                            println("User with username $username not found.")
+                            return@transaction Pair(false, mapOf("message" to "Unauthorized"))
+                        }
+
+                // 프로필정보 조회
+                val profileRecord = p.select(p.identityId eq identityRecord[i.id].value).singleOrNull()
+                        ?: return@transaction Pair(false, mapOf("message" to "Conflict"))
+
+                return@transaction Pair(true, mapOf(
+                        "id" to profileRecord[p.id],
+                        "username" to identityRecord[i.username],
+                        "secret" to identityRecord[i.secret]
+                ))
+            }
+
+            if (!result) {
+                return Pair(false, payload["message"].toString());
+            }
+
+            //   password+salt -> 해시 -> secret 일치여부 확인
+            val isVerified = HashUtil.verifyHash(password, payload["secret"].toString())
+            if (!isVerified) {
+                return Pair(false, "Unauthorized")
+            }
+
+            val token = JwtUtil.createToken(
+                    payload["id"].toString().toLong(),
+                    payload["username"].toString(),
+            )
+
+            return Pair(true, token)
         }
-
-        if(!result) {
-            return Pair(false, payload["message"].toString());
-        }
-
-        //   password+salt -> 해시 -> secret 일치여부 확인
-        val isVerified = HashUtil.verifyHash(password, payload["secret"].toString())
-        if (!isVerified) {
-            return Pair(false, "Unauthorized")
-        }
-
-        val token = JwtUtil.createToken(
-            payload["id"].toString().toLong(),
-            payload["username"].toString(),
-            payload["nickname"].toString()
-        )
-
-        return Pair(true, token)
     }
 }
