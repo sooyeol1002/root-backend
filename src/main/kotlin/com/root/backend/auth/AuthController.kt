@@ -11,6 +11,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = ["http://localhost:5000"])
 class AuthController(private val service: AuthService) {
 
     //1. (브라우저) 로그인 요청
@@ -26,7 +27,7 @@ class AuthController(private val service: AuthService) {
     //   Set-Cookie: 인증키=키........; domain=.naver.com
     //   Location: "리다이렉트 주소"
     //3. (브라우저) 쿠키를 생성(도메인에 맞게)
-    @PostMapping(value = ["/login"])
+    @PostMapping("/login")
     fun login(
             @RequestBody loginRequest: LoginRequest,
             res: HttpServletResponse,
@@ -48,18 +49,12 @@ class AuthController(private val service: AuthService) {
 
             res.addCookie(cookie)
 
-            return ResponseEntity
-                    .status(HttpStatus.FOUND)
-                    .location(ServletUriComponentsBuilder
-                            .fromHttpUrl("http://localhost:5500")
-                            .build().toUri()).build<Any>()
+            return ResponseEntity.ok(mapOf("status" to "success", "token" to token))
         } else {
             println("Login failed: $message")
             return ResponseEntity
-                    .status(HttpStatus.FOUND)
-                    .location(ServletUriComponentsBuilder
-                            .fromHttpUrl("http://localhost:5500/login.html?err=$message")
-                            .build().toUri()).build<Any>()
+                    .status(HttpStatus.UNAUTHORIZED).body(mapOf("status" to "error", "message" to message))
+
         }
     }
 }

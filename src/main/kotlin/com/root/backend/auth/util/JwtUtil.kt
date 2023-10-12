@@ -50,5 +50,12 @@ object JwtUtil {
             null
         }
     }
+
+    fun extractToken(bearerToken: String): String? {
+        if (bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7)
+        }
+        return null
+    }
 }
 

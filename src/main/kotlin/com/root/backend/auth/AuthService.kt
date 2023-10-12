@@ -2,6 +2,7 @@ package com.root.backend.auth
 
 import com.root.backend.auth.util.HashUtil
 import com.root.backend.auth.util.JwtUtil
+import com.root.backend.auth.util.JwtUtil.extractToken
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -84,18 +85,36 @@ class AuthService(private val database: Database) {
     }
 
     fun registerProfile(token: String, profileData: Profile): Boolean {
-        val authProfile = JwtUtil.validateToken(token) ?: return false
-        val userId = EntityID(authProfile.id, Identities)
+        println("Token: $token")
+        println("ProfileData: $profileData")
 
-        transaction {
-            Profiles.insert {
-                it[this.identityId] = userId
-                it[this.brandName] = profileData.brandName
-                it[this.businessNumber] = profileData.businessNumber
-                it[this.representativeName] = profileData.representativeName
-                it[this.brandIntro] = profileData.brandIntro
-                it[this.profileImage] = profileData.profileImage
+        val actualToken = extractToken(token) ?: return false
+        val authProfile = JwtUtil.validateToken(actualToken)
+        if (authProfile == null) {
+            println("토큰 검증 실패")
+            return false
+        } else {
+            println("토큰이 검증됨. AuthProfile: $authProfile")
+        }
+
+        val userId = EntityID(authProfile.id, Identities)
+        val imageBytes : ByteArray = profileData.profileImage.inputStream.readBytes()
+
+        try {
+            transaction {
+                Profiles.insert {
+                    it[this.identityId] = userId
+                    it[this.brandName] = profileData.brandName
+                    it[this.businessNumber] = profileData.businessNumber
+                    it[this.representativeName] = profileData.representativeName
+                    it[this.brandIntro] = profileData.brandIntro
+                    it[this.profileImage] = imageBytes
+                }
             }
+            println("프로필이 데이터베이스에 성공적으로 삽입되었습니다.")
+        } catch (e: Exception) {
+            println("데이터베이스에 프로필을 삽입하는중 오류 발생. 예외: $e")
+            return false
         }
         return true
     }

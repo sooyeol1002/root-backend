@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @Configuration
-@EnableWebMvc
 class WebMvcConfig(val authInterceptor: AuthInterceptor) : WebMvcConfigurer {
     // CORS(cross orgin resource sharing)
     // 다른 origin끼리 자원을 공유할 수 있게 하는 것
@@ -23,6 +22,7 @@ class WebMvcConfig(val authInterceptor: AuthInterceptor) : WebMvcConfigurer {
                         "http://localhost:5500",
                         "http://127.0.0.1:5500",
                         "http://localhost:5000"
+
                 ) // 로컬 호스트 origin 허용
                 .allowedMethods("*") // 모든 메서드 허용(GET, POST.....)
     }

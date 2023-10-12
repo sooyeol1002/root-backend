@@ -18,7 +18,7 @@ object Profiles : LongIdTable("profile") {
     val businessNumber = varchar("business_number", 12)
     val representativeName = varchar("representative_name", 100)
     val brandIntro = text("brand_intro")
-    val profileImage = varchar("profile_image", 500)
+    val profileImage = binary("profile_image")
 }
 
 @Configuration
