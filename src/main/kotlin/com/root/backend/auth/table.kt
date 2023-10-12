@@ -13,9 +13,12 @@ object Identities : LongIdTable("identity") {
 }
 
 object Profiles : LongIdTable("profile") {
-    val email = varchar("email", 200)
-    val nickname = varchar("nickname", 100)
     val identityId = reference("identity_id", Identities )
+    val brandName = varchar("brand_name", 200)
+    val businessNumber = varchar("business_number", 12)
+    val representativeName = varchar("representative_name", 100)
+    val brandIntro = text("brand_intro")
+    val profileImage = varchar("profile_image", 500)
 }
 
 @Configuration

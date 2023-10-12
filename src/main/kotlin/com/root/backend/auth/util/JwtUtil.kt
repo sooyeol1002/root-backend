@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.interfaces.DecodedJWT
-import com.root.backend.auth.Profile
+import com.root.backend.auth.AuthProfile
 import java.util.*
 
 object JwtUtil {
@@ -32,7 +32,7 @@ object JwtUtil {
             .sign(algorithm)
     }
 
-    fun validateToken(token: String): Profile? {
+    fun validateToken(token: String): AuthProfile? {
         val algorithm = Algorithm.HMAC256(secret)
         // 검증 객체 생성
         val verifier: JWTVerifier = JWT.require(algorithm).build()
@@ -44,7 +44,7 @@ object JwtUtil {
             val username: String = decodedJWT
                 .getClaim("username").asString()
 
-            Profile(id, username)
+            AuthProfile(id, username)
         } catch (e: JWTVerificationException) {
             // 토큰 검증 오류 상황
             null

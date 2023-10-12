@@ -40,7 +40,7 @@ class AuthInterceptor : HandlerInterceptor {
             // 인증 토큰이 있으면
             // 3. 인증토큰 검증 및 페이로드(subject/claim) 객체화하기
             // 메시지 개념에서 서로 주고받는 데이터를 페이로드(payload)
-            val profile: Profile? = JwtUtil.validateToken(token.replace("Bearer ", ""))
+            val profile: AuthProfile? = JwtUtil.validateToken(token.replace("Bearer ", ""))
             if (profile == null) {
                 // 401: Unauthorized
                 // 인증토큰이 잘못 됨(시그니처, 페이로드, 알고리즘..)

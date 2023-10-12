@@ -31,7 +31,9 @@ class AuthController(private val service: AuthService) {
             @RequestBody loginRequest: LoginRequest,
             res: HttpServletResponse,
     ): ResponseEntity<*> {
-        val (result, message) = service.authenticate(loginRequest.username, loginRequest.password)
+
+        val (result, message) =
+            service.authenticate(loginRequest.username, loginRequest.password)
         println(loginRequest.username)
         println(loginRequest.password)
 
