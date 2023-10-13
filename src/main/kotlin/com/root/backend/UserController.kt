@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 @RestController
 @RequestMapping("/user")
@@ -24,8 +27,16 @@ class UserController(private val authService: AuthService) {
 
     ): ResponseEntity<String> {
         try {
-            val profileData = Profile(brandName, businessNumber, representativeName,brandIntro, profileImage)
-            val isSuccess = authService.registerProfile(token, profileData)
+            logger.info("Registering profile with brandName: $brandName, businessNumber: $businessNumber")
+
+            val targetDirectory = "files/profileImage"
+            val targetPath = Paths.get(targetDirectory, profileImage.originalFilename)
+            Files.copy(profileImage.inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING)
+
+            val profileImageList = listOf(profileImage)
+
+            val profileData = Profile(brandName, businessNumber, representativeName,brandIntro, profileImageList)
+            val isSuccess = authService.registerProfile(token, profileData, listOf(profileImage))
 
             return if (isSuccess) {
                 ResponseEntity.ok("프로필 등록 완료.")

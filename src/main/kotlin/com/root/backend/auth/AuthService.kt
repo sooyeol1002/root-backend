@@ -1,19 +1,34 @@
 package com.root.backend.auth
 
+import com.root.backend.auth.Profiles.brandIntro
+import com.root.backend.auth.Profiles.brandName
+import com.root.backend.auth.Profiles.businessNumber
+import com.root.backend.auth.Profiles.representativeName
 import com.root.backend.auth.util.HashUtil
 import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import org.slf4j.LoggerFactory
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.multipart.MultipartFile
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+import java.util.UUID
 
 @Service
 class AuthService(private val database: Database) {
     private val logger = LoggerFactory.getLogger(this.javaClass.name)
+    private val PROFILE_IMAGE_PATH = "files/profileImage"
 
     fun authenticate(username: String, password: String): Pair<Boolean, String> {
 
@@ -84,8 +99,13 @@ class AuthService(private val database: Database) {
         }
     }
 
-    fun registerProfile(token: String, profileData: Profile): Boolean {
-        println("Token: $token")
+    fun registerProfile(
+            @RequestParam token: String,
+            @RequestPart profileData: Profile,
+            @RequestPart("profileImage") files: List<MultipartFile>
+
+            ): Boolean {
+        logger.info("Attempting to register profile with token: $token")
         println("ProfileData: $profileData")
 
         val actualToken = extractToken(token) ?: return false
@@ -98,24 +118,72 @@ class AuthService(private val database: Database) {
         }
 
         val userId = EntityID(authProfile.id, Identities)
-        val imageBytes : ByteArray = profileData.profileImage.inputStream.readBytes()
 
-        try {
-            transaction {
-                Profiles.insert {
-                    it[this.identityId] = userId
-                    it[this.brandName] = profileData.brandName
-                    it[this.businessNumber] = profileData.businessNumber
-                    it[this.representativeName] = profileData.representativeName
-                    it[this.brandIntro] = profileData.brandIntro
-                    it[this.profileImage] = imageBytes
+        val dirPath = Paths.get(PROFILE_IMAGE_PATH)
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath)
+        }
+
+        val filesMetaList = mutableListOf<Map<String, String>>()
+
+        runBlocking {
+            profileData.profileImage.forEach {
+                launch {
+                    val originalFileName = it.originalFilename
+                            ?: throw IllegalArgumentException("Original filename is missing")
+                    val uuidFileName = buildString {
+                        append(UUID.randomUUID().toString())
+                        append(".")
+                        append(originalFileName!!.split(".").last())
+                    }
+                    val filePath = dirPath.resolve(uuidFileName)
+                    it.inputStream.use {
+                        Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)
+                    }
+                    filesMetaList.add(mapOf(
+                            "originalFileName" to originalFileName,
+                            "uuidFileName" to uuidFileName,
+                            "contentType" to it.contentType!!
+                    ))
                 }
             }
-            println("프로필이 데이터베이스에 성공적으로 삽입되었습니다.")
-        } catch (e: Exception) {
-            println("데이터베이스에 프로필을 삽입하는중 오류 발생. 예외: $e")
-            return false
         }
+
+
+        transaction {
+            try {
+                val result = Profiles.insert {
+                    it[this.identityId] = userId
+                    it[this.brandName] = brandName
+                    it[this.businessNumber] = businessNumber
+                    it[this.representativeName] = representativeName
+                    it[this.brandIntro] = brandIntro
+                }
+
+                // 로그 추가
+                logger.info("brandName: $brandName")
+                logger.info("businessNumber: $businessNumber")
+                logger.info("representativeName: $representativeName")
+                logger.info("brandIntro: $brandIntro")
+
+                // `resultedValues`가 null인지 체크하고, null이 아니라면 첫 번째 값을 가져옵니다.
+                val profile = result.resultedValues?.firstOrNull()
+                        ?: throw Exception("Failed to insert profile into the database.")
+
+                ProfilesMeta.batchInsert(filesMetaList) {
+                    this[ProfilesMeta.profileID] = profile[Profiles.id]
+                    this[ProfilesMeta.originalFileName] = it["originalFileName"] as String
+                    this[ProfilesMeta.uuidFileName] = it["uuidFileName"] as String
+                    this[ProfilesMeta.contentType] = it["contentType"] as String
+                }
+
+                println("프로필이 데이터베이스에 성공적으로 삽입되었습니다.")
+            } catch (e: Exception) {
+                logger.error("데이터베이스에 프로필을 삽입하는중 오류 발생. 예외: $e")
+                return@transaction false
+            }
+        }
+        logger.info("프로필 등록 성공 token: $token")
         return true
     }
 }

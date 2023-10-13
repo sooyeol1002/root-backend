@@ -1,15 +1,6 @@
 package com.root.backend.auth
 
 import org.springframework.web.multipart.MultipartFile
-import java.awt.Image
-
-
-data class SignupRequest (
-     val username: String,
-     val password: String,
-     val nickname: String,
-     val email: String,
-)
 
 data class AuthProfile (
      val id: Long, // 프로필 id
@@ -31,5 +22,5 @@ data class Profile (
     val businessNumber : String, // 사업자번호, 일단 숫자로 가고, 나중에 000-00-00000 으로 갈수도
     val representativeName : String, // 대표자명
     val brandIntro : String, // 브랜드 한줄소개
-    val profileImage : MultipartFile // 프로필사진
+    val profileImage : List<MultipartFile> // 프로필사진
 )
