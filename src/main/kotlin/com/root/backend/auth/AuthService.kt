@@ -154,10 +154,10 @@ class AuthService(private val database: Database) {
             try {
                 val result = Profiles.insert {
                     it[this.identityId] = userId
-                    it[this.brandName] = brandName
-                    it[this.businessNumber] = businessNumber
-                    it[this.representativeName] = representativeName
-                    it[this.brandIntro] = brandIntro
+                    it[this.brandName] = profileData.brandName
+                    it[this.businessNumber] = profileData.businessNumber
+                    it[this.representativeName] = profileData.representativeName
+                    it[this.brandIntro] = profileData.brandIntro
                 }
 
                 // 로그 추가

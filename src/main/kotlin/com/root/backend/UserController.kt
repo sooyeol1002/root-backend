@@ -17,7 +17,7 @@ class UserController(private val authService: AuthService) {
     private val logger = LoggerFactory.getLogger(UserController::class.java)
 
     @PostMapping("/register", consumes = ["multipart/form-data"])
-    fun registerProfile(
+    fun registProfile(
         @RequestHeader("Authorization") token: String,
         @RequestParam("brandName") brandName: String,
         @RequestParam("businessNumber") businessNumber: String,
