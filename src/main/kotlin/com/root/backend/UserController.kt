@@ -3,7 +3,6 @@ package com.root.backend
 import com.root.backend.auth.*
 import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
-import com.sun.rowset.internal.Row
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.select
