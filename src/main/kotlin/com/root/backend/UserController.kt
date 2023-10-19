@@ -5,6 +5,7 @@ import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
@@ -58,8 +59,11 @@ class UserController(private val authService: AuthService) {
         }
     }
 
-    @GetMapping("/profileImage")
-    fun getProfileImage(@RequestHeader("Authorization") token: String): ResponseEntity<ByteArray> {
+    @GetMapping("/profileImage/{userId}/{uuid}")
+    fun getProfileImage(@RequestHeader("Authorization") token: String,
+                        @PathVariable userId: String,
+                        @PathVariable uuid: String
+    ): ResponseEntity<ByteArray> {
         val actualToken = extractToken(token) ?: return ResponseEntity.status(403).body(null)
         val authProfile = JwtUtil.validateToken(actualToken)
         if (authProfile == null) {
@@ -69,7 +73,8 @@ class UserController(private val authService: AuthService) {
         val userId = EntityID(authProfile.id, Identities)
 
         val profileMeta: ResultRow = transaction {
-            ProfilesMeta.select { ProfilesMeta.profileID eq userId }.singleOrNull()
+            ProfilesMeta.select { (ProfilesMeta.profileID eq userId) and (ProfilesMeta.uuidFileName eq uuid) }
+                .singleOrNull()
         } ?: return ResponseEntity.status(404).body(null)
 
         val uuidFileName = profileMeta[ProfilesMeta.uuidFileName]
@@ -103,5 +108,24 @@ class UserController(private val authService: AuthService) {
         } catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 에러")
         }
+    }
+
+    @GetMapping("/getUserInfo")
+    fun getUserInfo(@RequestHeader("Authorization") token: String): ResponseEntity<Map<String, String>> {
+        val actualToken = extractToken(token) ?: return ResponseEntity.status(403).body(null)
+        val authProfile = JwtUtil.validateToken(actualToken)
+        if (authProfile == null) {
+            return ResponseEntity.status(403).body(null)
+        }
+
+        val userId = authProfile.id
+
+        val profileMeta: ResultRow = transaction {
+            ProfilesMeta.select { ProfilesMeta.profileID eq EntityID(userId, Identities) }.singleOrNull()
+        } ?: return ResponseEntity.status(404).body(null)
+
+        val uuid = profileMeta[ProfilesMeta.uuidFileName]
+
+            return ResponseEntity.ok(mapOf("userId" to userId.toString(), "uuid" to uuid))
     }
 }
