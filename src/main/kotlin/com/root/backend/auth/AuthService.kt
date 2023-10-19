@@ -58,25 +58,25 @@ class AuthService(private val database: Database) {
         } else {
 
             val (result, payload) = transaction(
-                    database.transactionManager.defaultIsolationLevel, readOnly = true) {
+                database.transactionManager.defaultIsolationLevel, readOnly = true) {
                 val i = Identities;
                 val p = Profiles;
 
                 // 인증정보 조회
                 val identityRecord = i.select(i.username eq username).singleOrNull()
-                        ?: run {
-                            println("User with username $username not found.")
-                            return@transaction Pair(false, mapOf("message" to "Unauthorized"))
-                        }
+                    ?: run {
+                        println("User with username $username not found.")
+                        return@transaction Pair(false, mapOf("message" to "Unauthorized"))
+                    }
 
                 // 프로필정보 조회
                 val profileRecord = p.select(p.identityId eq identityRecord[i.id].value).singleOrNull()
-                        ?: return@transaction Pair(false, mapOf("message" to "Conflict")) // 에러나면 삭제
+                    ?: return@transaction Pair(false, mapOf("message" to "Conflict")) // 에러나면 삭제
 
                 return@transaction Pair(true, mapOf(
-                        "id" to profileRecord[p.id],
-                        "username" to identityRecord[i.username],
-                        "secret" to identityRecord[i.secret]
+                    "id" to profileRecord[p.id],
+                    "username" to identityRecord[i.username],
+                    "secret" to identityRecord[i.secret]
                 ))
             }
 
@@ -91,8 +91,8 @@ class AuthService(private val database: Database) {
             }
 
             val token = JwtUtil.createToken(
-                    payload["id"].toString().toLong(),
-                    payload["username"].toString(),
+                payload["id"].toString().toLong(),
+                payload["username"].toString(),
             )
 
             return Pair(true, token)
@@ -100,11 +100,11 @@ class AuthService(private val database: Database) {
     }
 
     fun registerProfile(
-            @RequestParam token: String,
-            @RequestPart profileData: Profile,
-            @RequestPart("profileImage") files: List<MultipartFile>
+        @RequestParam token: String,
+        @RequestPart profileData: Profile,
+        @RequestPart("profileImage") files: List<MultipartFile>
 
-            ): Boolean {
+    ): Boolean {
         logger.info("Attempting to register profile with token: $token")
         println("ProfileData: $profileData")
 
@@ -130,7 +130,7 @@ class AuthService(private val database: Database) {
             profileData.profileImage.forEach {
                 launch {
                     val originalFileName = it.originalFilename
-                            ?: throw IllegalArgumentException("Original filename is missing")
+                        ?: throw IllegalArgumentException("Original filename is missing")
                     val uuidFileName = buildString {
                         append(UUID.randomUUID().toString())
                         append(".")
@@ -141,9 +141,9 @@ class AuthService(private val database: Database) {
                         Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)
                     }
                     filesMetaList.add(mapOf(
-                            "originalFileName" to originalFileName,
-                            "uuidFileName" to uuidFileName,
-                            "contentType" to it.contentType!!
+                        "originalFileName" to originalFileName,
+                        "uuidFileName" to uuidFileName,
+                        "contentType" to it.contentType!!
                     ))
                 }
             }
@@ -168,7 +168,7 @@ class AuthService(private val database: Database) {
 
                 // `resultedValues`가 null인지 체크하고, null이 아니라면 첫 번째 값을 가져옵니다.
                 val profile = result.resultedValues?.firstOrNull()
-                        ?: throw Exception("Failed to insert profile into the database.")
+                    ?: throw Exception("Failed to insert profile into the database.")
 
                 ProfilesMeta.batchInsert(filesMetaList) {
                     this[ProfilesMeta.profileID] = profile[Profiles.id]

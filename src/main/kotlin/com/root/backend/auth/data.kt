@@ -3,16 +3,16 @@ package com.root.backend.auth
 import org.springframework.web.multipart.MultipartFile
 
 data class AuthProfile (
-     val id: Long, // 프로필 id
-     val username: String, // 로그인 사용자이름
+    val id: Long, // 프로필 id
+    val username: String, // 로그인 사용자이름
 )
 
 data class User(val id: Long, val username: String, val password: String)
 
 val users = listOf(
-        User(1L, "user1", "pass1"),
-        User(2L, "user2", "pass2"),
-        User(3L, "user3", "pass3")
+    User(1L, "user1", "pass1"),
+    User(2L, "user2", "pass2"),
+    User(3L, "user3", "pass3")
 )
 
 data class LoginRequest(val username: String, val password: String)
