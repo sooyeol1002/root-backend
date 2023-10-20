@@ -30,6 +30,7 @@ class AuthService(private val database: Database) {
     private val logger = LoggerFactory.getLogger(this.javaClass.name)
     private val PROFILE_IMAGE_PATH = "files/profileImage"
 
+    @Auth
     fun authenticate(username: String, password: String): Pair<Boolean, String> {
 
         // readOnly를 하게되면 transaction id를 생성하지 않음

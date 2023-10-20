@@ -21,8 +21,7 @@ class WebMvcConfig(val authInterceptor: AuthInterceptor) : WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:5500",
                         "http://127.0.0.1:5500",
-                        "http://localhost:5000"
-
+                        "http://localhost:5000",
                 ) // 로컬 호스트 origin 허용
                 .allowedMethods("*") // 모든 메서드 허용(GET, POST.....)
     }

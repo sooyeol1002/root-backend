@@ -3,6 +3,7 @@ package com.root.backend.auth
 import com.root.backend.auth.util.JwtUtil
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
+import org.apache.tomcat.util.http.parser.Authorization
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,7 +12,6 @@ import java.util.*
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = ["http://localhost:5000"])
 class AuthController(private val service: AuthService) {
 
     //1. (브라우저) 로그인 요청
@@ -27,11 +27,21 @@ class AuthController(private val service: AuthService) {
     //   Set-Cookie: 인증키=키........; domain=.naver.com
     //   Location: "리다이렉트 주소"
     //3. (브라우저) 쿠키를 생성(도메인에 맞게)
+
+    @Auth
     @PostMapping("/login")
     fun login(
             @RequestBody loginRequest: LoginRequest,
             res: HttpServletResponse,
+            @RequestHeader("Authorization") authorization: String?
     ): ResponseEntity<*> {
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(mapOf("status" to "error", "message" to "No Authorization header provided"))
+        }
+
+        val token = authorization.substring(7)
 
         val (result, message) =
             service.authenticate(loginRequest.username, loginRequest.password)
@@ -39,17 +49,21 @@ class AuthController(private val service: AuthService) {
         println(loginRequest.password)
 
         if (result) {
-            val token = message
-            println("Token Token : $token")
+            val generatedToken  = message
+            println("Token Token : $generatedToken")
 
-            val cookie = Cookie("token", token)
+            val cookie = Cookie("token", generatedToken)
             cookie.path = "/"
             cookie.maxAge = (JwtUtil.TOKEN_TIMEOUT / 1000L).toInt()
             cookie.domain = "localhost"
 
             res.addCookie(cookie)
 
-            return ResponseEntity.ok(mapOf("status" to "success", "token" to token))
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(mapOf("status" to "success",
+                            "token" to generatedToken,
+                            "redirectUrl" to "http://localhost:5000/home"))
         } else {
             println("Login failed: $message")
             return ResponseEntity
