@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import java.util.*
 
+//@CrossOrigin(origins = ["http://localhost:5000"], allowCredentials = "true")
 @RestController
 @RequestMapping("/auth")
 class AuthController(private val service: AuthService) {
@@ -28,29 +29,19 @@ class AuthController(private val service: AuthService) {
     //   Location: "리다이렉트 주소"
     //3. (브라우저) 쿠키를 생성(도메인에 맞게)
 
-    @Auth
     @PostMapping("/login")
     fun login(
-            @RequestBody loginRequest: LoginRequest,
-            res: HttpServletResponse,
-            @RequestHeader("Authorization") authorization: String?
-    ): ResponseEntity<*> {
+            @RequestParam("username") username: String,
+            @RequestParam("password") password: String,
+            res: HttpServletResponse,): ResponseEntity<*> {
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(mapOf("status" to "error", "message" to "No Authorization header provided"))
-        }
-
-        val token = authorization.substring(7)
-
-        val (result, message) =
-            service.authenticate(loginRequest.username, loginRequest.password)
-        println(loginRequest.username)
-        println(loginRequest.password)
+        val (result, message) = service.authenticate(username, password)
+        println(username)
+        println(password)
 
         if (result) {
             val generatedToken  = message
-            println("Token Token : $generatedToken")
+            println("Token : $generatedToken")
 
             val cookie = Cookie("token", generatedToken)
             cookie.path = "/"
@@ -59,11 +50,15 @@ class AuthController(private val service: AuthService) {
 
             res.addCookie(cookie)
 
+            val redirectUrl = "http://localhost:5000/home"
             return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(mapOf("status" to "success",
-                            "token" to generatedToken,
-                            "redirectUrl" to "http://localhost:5000/home"))
+                    .status(HttpStatus.FOUND)
+                    .location(
+                            ServletUriComponentsBuilder
+                                    .fromHttpUrl(redirectUrl)
+                                    .build().toUri()
+                    )
+                    .build<Any>()
         } else {
             println("Login failed: $message")
             return ResponseEntity
