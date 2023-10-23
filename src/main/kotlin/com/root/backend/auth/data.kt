@@ -1,6 +1,7 @@
 package com.root.backend.auth
 
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 data class AuthProfile (
     val id: Long, // 프로필 id
@@ -23,4 +24,12 @@ data class Profile (
     val representativeName : String, // 대표자명
     val brandIntro : String, // 브랜드 한줄소개
     val profileImage : List<MultipartFile> // 프로필사진
+)
+
+data class Event (
+    var id: Long,
+    var title: String,
+    var startDate: LocalDate,
+    var endDate: LocalDate,
+    var color: String
 )

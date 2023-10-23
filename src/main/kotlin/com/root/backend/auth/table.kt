@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.context.annotation.Configuration
 
@@ -27,12 +28,20 @@ object ProfilesMeta : LongIdTable("profile_meta") {
     val contentType = varchar("content_type", 100)
 }
 
+object Events : LongIdTable("event") {
+    val eventID = reference("identity_id", Identities)
+    val title = varchar("title", 255)
+    val startDate = date("start_date")
+    val endDate = date("end_date")
+    val color = varchar("color", 10)
+}
+
 @Configuration
 class AuthTableSetup(private val database: Database) {
     @PostConstruct
     fun migrateSchema() {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, ProfilesMeta)
+            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, ProfilesMeta, Events)
         }
     }
 }
