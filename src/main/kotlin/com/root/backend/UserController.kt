@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.util.*
 
 @RestController
 @RequestMapping("/user")
@@ -38,13 +39,7 @@ class UserController(private val authService: AuthService) {
         try {
             logger.info("Registering profile with brandName: $brandName, businessNumber: $businessNumber")
 
-            val targetDirectory = "files/profileImage"
-            val targetPath = Paths.get(targetDirectory, profileImage.originalFilename)
-            Files.copy(profileImage.inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING)
-
-            val profileImageList = listOf(profileImage)
-
-            val profileData = Profile(brandName, businessNumber, representativeName,brandIntro, profileImageList)
+            val profileData = Profile(brandName, businessNumber, representativeName,brandIntro, listOf(profileImage))
             val isSuccess = authService.registerProfile(token, profileData, listOf(profileImage))
 
             return if (isSuccess) {
@@ -54,7 +49,7 @@ class UserController(private val authService: AuthService) {
                 ResponseEntity.badRequest().body("프로필 등록 실패.")
             }
         } catch (e: Exception) {
-            logger.error("Error while registering profile for user with token: $token", e)
+            logger.error("Error while  registering profile for user with token: $token", e)
             return ResponseEntity.status(500).body("서버 내부 에러.")
         }
     }
@@ -70,10 +65,10 @@ class UserController(private val authService: AuthService) {
             return ResponseEntity.status(403).body(null)
         }
 
-        val userId = EntityID(authProfile.id, Identities)
+        val userIdFromToken = EntityID(authProfile.id, Identities)
 
         val profileMeta: ResultRow = transaction {
-            ProfilesMeta.select { (ProfilesMeta.profileID eq userId) and (ProfilesMeta.uuidFileName eq uuid) }
+            ProfilesMeta.select { (ProfilesMeta.profileID eq userIdFromToken) and (ProfilesMeta.uuidFileName eq uuid) }
                 .singleOrNull()
         } ?: return ResponseEntity.status(404).body(null)
 
@@ -93,7 +88,8 @@ class UserController(private val authService: AuthService) {
     @GetMapping("/brandName")
     fun getBrandName(@RequestHeader("Authorization") token: String): ResponseEntity<String> {
         try {
-            val authProfile = JwtUtil.validateToken(token.replace("Bearer ", ""))
+            val actualToken = extractToken(token) ?: return ResponseEntity.status(403).body(null)
+            val authProfile = JwtUtil.validateToken(actualToken)
             if (authProfile == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 검증 실패")
             }
