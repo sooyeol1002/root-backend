@@ -100,6 +100,7 @@ class AuthService(private val database: Database) {
         }
     }
 
+    @Auth
     fun registerProfile(
         @RequestParam token: String,
         @RequestPart profileData: Profile,

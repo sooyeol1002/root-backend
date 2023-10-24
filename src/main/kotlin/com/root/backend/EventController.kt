@@ -1,5 +1,6 @@
 package com.root.backend
 
+import com.root.backend.auth.Auth
 import com.root.backend.auth.Event
 import com.root.backend.auth.Identities
 import com.root.backend.auth.util.JwtUtil
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/events")
 class EventController(private val eventService: EventService) {
 
+    @Auth
     @GetMapping
     fun getEvents(@RequestHeader("Authorization") token: String): ResponseEntity<List<Event>> {
         val authProfile = eventService.validateTokenWithBearer(token) ?: return ResponseEntity.status(401).build()
@@ -24,6 +26,7 @@ class EventController(private val eventService: EventService) {
         }
     }
 
+    @Auth
     @PostMapping
     fun addEvent(@RequestHeader("Authorization") token: String, @RequestBody event: Event): ResponseEntity<Void> {
         val authProfile = eventService.validateTokenWithBearer(token) ?: return ResponseEntity.status(401).build()
@@ -35,6 +38,7 @@ class EventController(private val eventService: EventService) {
         }
     }
 
+    @Auth
     @PutMapping("/{id}")
     fun updateEvent(@RequestHeader("Authorization") token: String, @RequestBody event: Event): ResponseEntity<Void> {
         val authProfile = eventService.validateTokenWithBearer(token) ?: return ResponseEntity.status(401).build()
@@ -47,6 +51,7 @@ class EventController(private val eventService: EventService) {
         }
     }
 
+    @Auth
     @DeleteMapping("/{eventId}")
     fun deleteEvent(@RequestHeader("Authorization") token: String, @PathVariable eventId: Long): ResponseEntity<Void> {
         val authProfile = eventService.validateTokenWithBearer(token) ?: return ResponseEntity.status(401).build()

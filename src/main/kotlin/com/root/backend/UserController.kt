@@ -26,6 +26,7 @@ class UserController(private val authService: AuthService) {
     private val logger = LoggerFactory.getLogger(UserController::class.java)
     private val PROFILE_IMAGE_PATH = "files/profileImage"
 
+    @Auth
     @PostMapping("/register", consumes = ["multipart/form-data"])
     fun registProfile(
         @RequestHeader("Authorization") token: String,
@@ -54,6 +55,7 @@ class UserController(private val authService: AuthService) {
         }
     }
 
+    @Auth
     @GetMapping("/profileImage/{userId}/{uuid}")
     fun getProfileImage(@RequestHeader("Authorization") token: String,
                         @PathVariable userId: String,
@@ -85,6 +87,7 @@ class UserController(private val authService: AuthService) {
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(imageBytes)
     }
 
+    @Auth
     @GetMapping("/brandName")
     fun getBrandName(@RequestHeader("Authorization") token: String): ResponseEntity<String> {
         try {
@@ -106,6 +109,7 @@ class UserController(private val authService: AuthService) {
         }
     }
 
+    @Auth
     @GetMapping("/getUserInfo")
     fun getUserInfo(@RequestHeader("Authorization") token: String): ResponseEntity<Map<String, String>> {
         val actualToken = extractToken(token) ?: return ResponseEntity.status(403).body(null)
