@@ -44,7 +44,7 @@ class EventService(private val database: Database) {
                     it[eventID] = EntityID(authProfile.id, Identities)
                     it[title] = event.title
                     it[startDate] = event.startDate
-                    it[endDate] = event.endDate
+                    it[endDate] = event.endDate.minusDays(1)
                     it[color] = event.color
                 }
                 true
@@ -63,7 +63,7 @@ class EventService(private val database: Database) {
                 Events.update({ Events.id eq event.id }) {
                     it[title] = event.title
                     it[startDate] = event.startDate
-                    it[endDate] = event.endDate
+                    it[endDate] = event.endDate.minusDays(1)
                     it[color] = event.color
                 } > 0
             } catch (e: Exception) {
