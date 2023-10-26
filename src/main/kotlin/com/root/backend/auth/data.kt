@@ -1,5 +1,6 @@
 package com.root.backend.auth
 
+import jdk.jfr.ContentType
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 
@@ -18,12 +19,15 @@ val users = listOf(
 
 data class LoginRequest(val username: String, val password: String)
 
-data class Profile (
-    val brandName : String, // 브랜드명
-    val businessNumber : String, // 사업자번호, 일단 숫자로 가고, 나중에 000-00-00000 으로 갈수도
-    val representativeName : String, // 대표자명
-    val brandIntro : String, // 브랜드 한줄소개
-    val profileImage : List<MultipartFile> // 프로필사진
+data class Profile(
+        val brandName : String, // 브랜드명
+        val businessNumber : String, // 사업자번호, 일단 숫자로 가고, 나중에 000-00-00000 으로 갈수도
+        val representativeName : String, // 대표자명
+        val brandIntro : String, // 브랜드 한줄소개
+        val profileImage : List<MultipartFile>, // 프로필사진
+        val originalFileName : String,
+        var uuidFileName : String,
+        val contentType: String
 )
 
 data class Event (

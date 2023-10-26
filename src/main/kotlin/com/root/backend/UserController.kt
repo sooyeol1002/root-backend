@@ -1,6 +1,9 @@
 package com.root.backend
 
 import com.root.backend.auth.*
+import com.root.backend.auth.Profiles.contentType
+import com.root.backend.auth.Profiles.originalFileName
+import com.root.backend.auth.Profiles.uuidFileName
 import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
 import org.jetbrains.exposed.dao.id.EntityID
@@ -16,7 +19,6 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 import java.util.*
 
 @RestController
@@ -40,7 +42,22 @@ class UserController(private val authService: AuthService) {
         try {
             logger.info("Registering profile with brandName: $brandName, businessNumber: $businessNumber")
 
-            val profileData = Profile(brandName, businessNumber, representativeName,brandIntro, listOf(profileImage))
+            val originalFileName = profileImage.originalFilename
+                    ?: throw IllegalArgumentException("Original filename is missing")
+            val contentType = profileImage.contentType
+                    ?: throw IllegalArgumentException("Content type is missing")
+
+            val profileData = Profile(
+                    brandName = brandName,
+                    businessNumber = businessNumber,
+                    representativeName = representativeName,
+                    brandIntro = brandIntro,
+                    profileImage = listOf(profileImage),
+                    originalFileName = originalFileName,
+                    uuidFileName = "",
+                    contentType = contentType
+            )
+
             val isSuccess = authService.registerProfile(token, profileData, listOf(profileImage))
 
             return if (isSuccess) {
@@ -70,12 +87,12 @@ class UserController(private val authService: AuthService) {
         val userIdFromToken = EntityID(authProfile.id, Identities)
 
         val profileMeta: ResultRow = transaction {
-            ProfilesMeta.select { (ProfilesMeta.profileID eq userIdFromToken) and (ProfilesMeta.uuidFileName eq uuid) }
+            Profiles.select { (Profiles.identityId eq userIdFromToken) and (Profiles.uuidFileName eq uuid) }
                 .singleOrNull()
         } ?: return ResponseEntity.status(404).body(null)
 
-        val uuidFileName = profileMeta[ProfilesMeta.uuidFileName]
-        val contentType = profileMeta[ProfilesMeta.contentType]
+        val uuidFileName = profileMeta[Profiles.uuidFileName]
+        val contentType = profileMeta[Profiles.contentType]
         val dirPath = Paths.get(PROFILE_IMAGE_PATH)
         val imagePath = dirPath.resolve(uuidFileName)
 
@@ -121,10 +138,10 @@ class UserController(private val authService: AuthService) {
         val userId = EntityID(authProfile.id, Identities)
 
         val profileMeta: ResultRow = transaction {
-            ProfilesMeta.select { ProfilesMeta.profileID eq userId }.singleOrNull()
+            Profiles.select { Profiles.identityId eq userId }.singleOrNull()
         } ?: return ResponseEntity.status(404).body(null)
 
-        val uuid = profileMeta[ProfilesMeta.uuidFileName]
+        val uuid = profileMeta[Profiles.uuidFileName]
 
             return ResponseEntity.ok(mapOf("userId" to userId.toString(), "uuid" to uuid))
     }

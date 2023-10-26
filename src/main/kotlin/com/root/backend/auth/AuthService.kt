@@ -138,6 +138,7 @@ class AuthService(private val database: Database) {
                         append(".")
                         append(originalFileName!!.split(".").last())
                     }
+                    profileData.uuidFileName = uuidFileName
                     val filePath = dirPath.resolve(uuidFileName)
                     it.inputStream.use {
                         Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)
@@ -160,6 +161,9 @@ class AuthService(private val database: Database) {
                     it[this.businessNumber] = profileData.businessNumber
                     it[this.representativeName] = profileData.representativeName
                     it[this.brandIntro] = profileData.brandIntro
+                    it[this.originalFileName] = profileData.originalFileName
+                    it[this.uuidFileName] = profileData.uuidFileName
+                    it[this.contentType] = profileData.contentType
                 }
 
                 // 로그 추가
@@ -167,17 +171,6 @@ class AuthService(private val database: Database) {
                 logger.info("businessNumber: $businessNumber")
                 logger.info("representativeName: $representativeName")
                 logger.info("brandIntro: $brandIntro")
-
-                // `resultedValues`가 null인지 체크하고, null이 아니라면 첫 번째 값을 가져옵니다.
-                val profile = result.resultedValues?.firstOrNull()
-                    ?: throw Exception("Failed to insert profile into the database.")
-
-                ProfilesMeta.batchInsert(filesMetaList) {
-                    this[ProfilesMeta.profileID] = userId.value
-                    this[ProfilesMeta.originalFileName] = it["originalFileName"] as String
-                    this[ProfilesMeta.uuidFileName] = it["uuidFileName"] as String
-                    this[ProfilesMeta.contentType] = it["contentType"] as String
-                }
 
                 println("프로필이 데이터베이스에 성공적으로 삽입되었습니다.")
             } catch (e: Exception) {
