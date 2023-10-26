@@ -46,11 +46,11 @@ class AuthController(private val service: AuthService) {
             val cookie = Cookie("token", generatedToken)
             cookie.path = "/"
             cookie.maxAge = (JwtUtil.TOKEN_TIMEOUT / 1000L).toInt()
-            cookie.domain = "localhost"
+            cookie.domain = "192.168.100.152"
 
             res.addCookie(cookie)
 
-            val redirectUrl = "http://localhost:5000/home"
+            val redirectUrl = "http://192.168.100.152:5000/home"
             return ResponseEntity
                     .status(HttpStatus.FOUND)
                     .location(

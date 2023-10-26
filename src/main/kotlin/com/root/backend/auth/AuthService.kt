@@ -173,7 +173,7 @@ class AuthService(private val database: Database) {
                     ?: throw Exception("Failed to insert profile into the database.")
 
                 ProfilesMeta.batchInsert(filesMetaList) {
-                    this[ProfilesMeta.profileID] = profile[Profiles.id]
+                    this[ProfilesMeta.profileID] = userId.value
                     this[ProfilesMeta.originalFileName] = it["originalFileName"] as String
                     this[ProfilesMeta.uuidFileName] = it["uuidFileName"] as String
                     this[ProfilesMeta.contentType] = it["contentType"] as String

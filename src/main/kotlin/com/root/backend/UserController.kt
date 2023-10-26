@@ -118,10 +118,10 @@ class UserController(private val authService: AuthService) {
             return ResponseEntity.status(403).body(null)
         }
 
-        val userId = authProfile.id
+        val userId = EntityID(authProfile.id, Identities)
 
         val profileMeta: ResultRow = transaction {
-            ProfilesMeta.select { ProfilesMeta.profileID eq EntityID(userId, Identities) }.singleOrNull()
+            ProfilesMeta.select { ProfilesMeta.profileID eq userId }.singleOrNull()
         } ?: return ResponseEntity.status(404).body(null)
 
         val uuid = profileMeta[ProfilesMeta.uuidFileName]
