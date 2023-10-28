@@ -33,21 +33,20 @@ object Events : LongIdTable("event") {
     val color = varchar("color", 10)
 }
 
-//object ReceivedProfiles : LongIdTable("received_Profile") {
-//    val userid = varchar("userid",  100)
-//    val birth = varchar("birth", 15)
-//    val nickname = varchar("nickname",  50)
-//    val username = varchar("username", 100)
-//    val sex = varchar("sex", 10)
-//    val image = text("image")
-//    val introduction = varchar("introduction", 30)
-//}
+object Reviews : LongIdTable("review") {
+    val brandName = varchar("brand_name", 255)
+    val productNumber = integer("product_number")
+    val birthDate = varchar("birth_date", 15)
+    val gender = varchar("gender", 10)
+    val content = text("content")
+}
+
 @Configuration
 class AuthTableSetup(private val database: Database) {
     @PostConstruct
     fun migrateSchema() {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, Events) //, ReceivedProfiles)
+            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, Events, Reviews)
         }
     }
 }

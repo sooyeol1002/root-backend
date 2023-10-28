@@ -50,9 +50,12 @@ dependencies {
 	// spring transaction 호환, @Transaction
 	// 스프링 트랜잭션 매니저를 안 써야 더 디테일한 처리를 할 수 있음.
 	implementation("org.jetbrains.exposed:exposed-spring-boot-starter:$exposedVersion")
-
 	implementation("com.auth0:java-jwt:4.4.0")
 	implementation("at.favre.lib:bcrypt:0.10.2")
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
+	testImplementation("org.springframework.amqp:spring-rabbit-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 }
 
 dependencyManagement {
