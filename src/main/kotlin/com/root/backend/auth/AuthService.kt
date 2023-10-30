@@ -3,6 +3,8 @@ package com.root.backend.auth
 import com.root.backend.auth.Profiles.brandIntro
 import com.root.backend.auth.Profiles.brandName
 import com.root.backend.auth.Profiles.businessNumber
+import com.root.backend.auth.Profiles.contentType
+import com.root.backend.auth.Profiles.identityId
 import com.root.backend.auth.Profiles.representativeName
 import com.root.backend.auth.util.HashUtil
 import com.root.backend.auth.util.JwtUtil
@@ -15,7 +17,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import org.slf4j.LoggerFactory
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -180,5 +181,46 @@ class AuthService(private val database: Database) {
         }
         logger.info("프로필 등록 성공 token: $token")
         return true
+    }
+
+    fun getUserProfileFromToken(token: String): Profile? {
+        val bearerToken = JwtUtil.extractToken(token) ?: return null
+        val authProfile = JwtUtil.validateToken(bearerToken) ?: return null
+        return findProfileByUserId(authProfile.id)
+    }
+
+    private fun findProfileByUserId(userID: Long): Profile? {
+        return transaction {
+            Profiles.select { Profiles.identityId eq userID }
+                    .map {
+                Profile(
+                        brandName = it[brandName],
+                        businessNumber = it[businessNumber],
+                        representativeName = it[representativeName],
+                        brandIntro = it[brandIntro],
+                        profileImage = emptyList(), // 현재 파일 정보가 없으므로 비어 있는 리스트 할당
+                        originalFileName = it[Profiles.originalFileName],
+                        uuidFileName = it[Profiles.uuidFileName],
+                        contentType = it[contentType]
+                )
+            }
+                    .singleOrNull()
+        }
+    }
+
+    fun findReviewsByBrandName(brandName: String): List<Review> {
+        return transaction {
+            Reviews.select { Reviews.brandName eq brandName }
+                    .map {
+                        Review(
+                                id = it[Reviews.id].value, // id는 LongIdTable에서 value 속성을 사용
+                                brandName = it[Reviews.brandName],
+                                productNumber = it[Reviews.productNumber],
+                                birthDate = it[Reviews.birthDate],
+                                gender = it[Reviews.gender],
+                                content = it[Reviews.content]
+                        )
+                    }
+        }
     }
 }
