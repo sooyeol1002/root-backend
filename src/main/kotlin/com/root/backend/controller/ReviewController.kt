@@ -1,8 +1,9 @@
-package com.root.backend.review
+package com.root.backend.controller
 
 import com.root.backend.auth.AuthService
 import com.root.backend.Review
 import com.root.backend.ReviewDto
+import com.root.backend.review.ReviewService
 import com.root.backend.toReviewDto
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
