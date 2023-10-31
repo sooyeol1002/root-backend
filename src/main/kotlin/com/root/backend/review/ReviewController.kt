@@ -1,14 +1,11 @@
-package com.root.backend
+package com.root.backend.review
 
 import com.root.backend.auth.AuthService
-import com.root.backend.auth.Review
-import com.root.backend.auth.ReviewDto
-import com.root.backend.auth.toReviewDto
-import com.root.backend.auth.util.JwtUtil
+import com.root.backend.Review
+import com.root.backend.ReviewDto
+import com.root.backend.toReviewDto
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 

@@ -1,9 +1,9 @@
-package com.root.backend
+package com.root.backend.controller
 
 import com.root.backend.auth.Auth
-import com.root.backend.auth.Event
-import com.root.backend.auth.Identities
-import com.root.backend.auth.util.JwtUtil
+import com.root.backend.Event
+import com.root.backend.Identities
+import com.root.backend.event.EventService
 import org.jetbrains.exposed.dao.id.EntityID
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

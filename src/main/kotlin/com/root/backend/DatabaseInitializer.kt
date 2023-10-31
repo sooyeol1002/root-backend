@@ -1,9 +1,5 @@
 package com.root.backend
 
-import com.root.backend.auth.Identities
-import com.root.backend.auth.Review
-import com.root.backend.auth.Reviews
-import com.root.backend.auth.User
 import com.root.backend.auth.util.HashUtil
 import jakarta.annotation.PostConstruct
 import org.jetbrains.exposed.dao.id.EntityID
@@ -13,7 +9,6 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class DatabaseInitializer(private val database: Database) {

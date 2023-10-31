@@ -1,10 +1,9 @@
-package com.root.backend
+package com.root.backend.event
 
-import com.root.backend.auth.AuthProfile
-import com.root.backend.auth.Event
-import com.root.backend.auth.Events
-import com.root.backend.auth.Identities
-import com.root.backend.auth.util.JwtUtil
+import com.root.backend.AuthProfile
+import com.root.backend.Event
+import com.root.backend.Events
+import com.root.backend.Identities
 import com.root.backend.auth.util.JwtUtil.extractToken
 import com.root.backend.auth.util.JwtUtil.validateToken
 import org.jetbrains.exposed.dao.id.EntityID

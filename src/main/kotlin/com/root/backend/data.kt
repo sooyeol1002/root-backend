@@ -1,8 +1,6 @@
-package com.root.backend.auth
+package com.root.backend
 
-import jdk.jfr.ContentType
 import org.springframework.web.multipart.MultipartFile
-import java.io.Serializable
 import java.time.LocalDate
 
 data class AuthProfile (

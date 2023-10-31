@@ -1,9 +1,9 @@
-package com.root.backend
+package com.root.backend.controller
 
+import com.root.backend.Identities
+import com.root.backend.Profile
+import com.root.backend.Profiles
 import com.root.backend.auth.*
-import com.root.backend.auth.Profiles.contentType
-import com.root.backend.auth.Profiles.originalFileName
-import com.root.backend.auth.Profiles.uuidFileName
 import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
 import org.jetbrains.exposed.dao.id.EntityID

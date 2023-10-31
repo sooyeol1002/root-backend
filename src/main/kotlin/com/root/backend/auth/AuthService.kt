@@ -1,11 +1,11 @@
 package com.root.backend.auth
 
-import com.root.backend.auth.Profiles.brandIntro
-import com.root.backend.auth.Profiles.brandName
-import com.root.backend.auth.Profiles.businessNumber
-import com.root.backend.auth.Profiles.contentType
-import com.root.backend.auth.Profiles.identityId
-import com.root.backend.auth.Profiles.representativeName
+import com.root.backend.*
+import com.root.backend.Profiles.brandIntro
+import com.root.backend.Profiles.brandName
+import com.root.backend.Profiles.businessNumber
+import com.root.backend.Profiles.contentType
+import com.root.backend.Profiles.representativeName
 import com.root.backend.auth.util.HashUtil
 import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
@@ -103,9 +103,9 @@ class AuthService(private val database: Database) {
 
     @Auth
     fun registerProfile(
-        @RequestParam token: String,
-        @RequestPart profileData: Profile,
-        @RequestPart("profileImage") files: List<MultipartFile>
+            @RequestParam token: String,
+            @RequestPart profileData: Profile,
+            @RequestPart("profileImage") files: List<MultipartFile>
 
     ): Boolean {
         logger.info("Attempting to register profile with token: $token")

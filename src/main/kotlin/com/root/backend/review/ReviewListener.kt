@@ -1,6 +1,6 @@
-package com.root.backend
+package com.root.backend.review
 
-import com.root.backend.auth.Review
+import com.root.backend.Review
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.stereotype.Component
 

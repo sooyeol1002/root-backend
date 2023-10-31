@@ -1,5 +1,6 @@
 package com.root.backend.auth
 
+import com.root.backend.AuthProfile
 import com.root.backend.auth.util.JwtUtil
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
