@@ -46,10 +46,29 @@ data class Review(
         val birthDate: String,
         val gender: String,
         val content: String
-) : Serializable {
+) {
     fun calculateAge(): Int {
         val birthYear = birthDate.split("-")[0].toInt()
         val currentYear = LocalDate.now().year
         return currentYear - birthYear
     }
+}
+
+data class ReviewDto(
+        val id: Long,
+        val brandName: String,
+        val productNumber: Int,
+        val gender: String,
+        val content: String,
+        val age: Int
+)
+fun Review.toReviewDto(): ReviewDto {
+    return ReviewDto(
+            id = this.id,
+            brandName = this.brandName,
+            productNumber = this.productNumber,
+            gender = this.gender,
+            content = this.content,
+            age = this.calculateAge()
+    )
 }

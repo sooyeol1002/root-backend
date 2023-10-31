@@ -21,20 +21,4 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate) {
             }
         }
     }
-
-    fun getReviewsByBrand(brandName: String): List<Review> {
-        return transaction {
-            Reviews.select{ Reviews.brandName eq brandName}
-                    .map { row ->
-                Review(
-                        id = row[Reviews.id].value,
-                        brandName = row[Reviews.brandName],
-                        productNumber = row[Reviews.productNumber],
-                        birthDate = row[Reviews.birthDate],
-                        gender = row[Reviews.gender],
-                        content = row[Reviews.content]
-                )
-            }
-        }
-    }
 }

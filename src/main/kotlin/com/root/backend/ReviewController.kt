@@ -2,6 +2,8 @@ package com.root.backend
 
 import com.root.backend.auth.AuthService
 import com.root.backend.auth.Review
+import com.root.backend.auth.ReviewDto
+import com.root.backend.auth.toReviewDto
 import com.root.backend.auth.util.JwtUtil
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -27,10 +29,11 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
 
         return ResponseEntity.ok("RabbitMQ로 전송완료")
     }
+
     @GetMapping("/get")
-    fun getReviewsByBrandName(@RequestHeader("Authorization") token: String): ResponseEntity<List<Review>> {
+    fun getReviewsByBrandName(@RequestHeader("Authorization") token: String): ResponseEntity<List<ReviewDto>> {
         val profile = authService.getUserProfileFromToken(token) ?: return ResponseEntity.badRequest().build()
-        val reviews = authService.findReviewsByBrandName(profile.brandName)
+        val reviews = authService.findReviewsByBrandName(profile.brandName).map { it.toReviewDto() }
         return ResponseEntity.ok(reviews)
     }
 
