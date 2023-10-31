@@ -137,7 +137,7 @@ class AuthService(private val database: Database) {
                     val uuidFileName = buildString {
                         append(UUID.randomUUID().toString())
                         append(".")
-                        append(originalFileName!!.split(".").last())
+                        append(originalFileName.split(".").last())
                     }
                     profileData.uuidFileName = uuidFileName
                     val filePath = dirPath.resolve(uuidFileName)
