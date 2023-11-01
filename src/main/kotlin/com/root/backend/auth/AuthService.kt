@@ -156,7 +156,7 @@ class AuthService(private val database: Database) {
 
         transaction {
             try {
-                val result = Profiles.insert {
+                Profiles.insert {
                     it[this.identityId] = userId
                     it[this.brandName] = profileData.brandName
                     it[this.businessNumber] = profileData.businessNumber
