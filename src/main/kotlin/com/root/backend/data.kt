@@ -1,6 +1,7 @@
 package com.root.backend
 
 import org.springframework.web.multipart.MultipartFile
+import java.io.Serializable
 import java.time.LocalDate
 
 data class AuthProfile (
@@ -44,7 +45,7 @@ data class Review(
         val birthDate: String,
         val gender: String,
         val content: String
-) {
+) : Serializable {
     fun calculateAge(): Int {
         val birthYear = birthDate.split("-")[0].toInt()
         val currentYear = LocalDate.now().year

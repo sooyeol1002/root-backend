@@ -23,7 +23,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         // RabbitMQ로 메시지 전송
         rabbitTemplate.convertAndSend("reviewExchange", "routingKey", reviewData)
 
-        reviewService.saveReceivedReview(reviewData)
+//        reviewService.saveReceivedReview(reviewData)
 
         return ResponseEntity.ok("RabbitMQ로 전송완료")
     }
