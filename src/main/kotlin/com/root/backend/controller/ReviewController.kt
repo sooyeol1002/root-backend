@@ -23,16 +23,24 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         // RabbitMQ로 메시지 전송
         rabbitTemplate.convertAndSend("reviewExchange", "routingKey", reviewData)
 
-//        reviewService.saveReceivedReview(reviewData)
-
         return ResponseEntity.ok("RabbitMQ로 전송완료")
     }
 
     @GetMapping("/get")
-    fun getReviewsByBrandName(@RequestHeader("Authorization") token: String): ResponseEntity<List<ReviewDto>> {
+    fun getReviewsByBrandName(
+            @RequestHeader("Authorization") token: String,
+            @RequestParam(defaultValue = "0") page: Int,
+            @RequestParam(defaultValue = "10") size: Int
+    ): ResponseEntity<Map<String, Any>> {
         val profile = authService.getUserProfileFromToken(token) ?: return ResponseEntity.badRequest().build()
-        val reviews = authService.findReviewsByBrandName(profile.brandName).map { it.toReviewDto() }
-        return ResponseEntity.ok(reviews)
+        val reviewsPage = reviewService.findReviewsByBrandNameWithPaging(profile.brandName, page, size)
+        val response: Map<String, Any> = mapOf(
+                "content" to reviewsPage.reviews.map { it.toReviewDto() },
+                "totalPages" to reviewsPage.totalPages,
+                "totalElements" to reviewsPage.totalElements,
+                "currentPage" to page
+        )
+        return ResponseEntity.ok(response)
     }
 
 }

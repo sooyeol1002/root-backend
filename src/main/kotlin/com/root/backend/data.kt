@@ -71,3 +71,9 @@ fun Review.toReviewDto(): ReviewDto {
             age = this.calculateAge()
     )
 }
+
+data class PagedReviews(
+        val reviews: List<Review>,
+        val totalPages: Int,
+        val totalElements: Int
+)
