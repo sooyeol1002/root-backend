@@ -6,11 +6,8 @@ import com.root.backend.Reviews
 import com.root.backend.toReviewDto
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
-import org.springframework.data.domain.Pageable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import java.sql.ResultSet
@@ -27,7 +24,8 @@ class ReviewService(// private val rabbitTemplate: RabbitTemplate,
                 productNumber = rs.getInt("product_number"),
                 birthDate = rs.getString("birth_date"),
                 gender = rs.getString("gender"),
-                content = rs.getString("content")
+                content = rs.getString("content"),
+                scope = rs.getInt("scope")
         )
     }
 
@@ -39,6 +37,7 @@ class ReviewService(// private val rabbitTemplate: RabbitTemplate,
                 it[birthDate] = review.birthDate
                 it[gender] = review.gender
                 it[content] = review.content
+                it[scope] = review.scope
             }
         }
 
@@ -51,7 +50,7 @@ class ReviewService(// private val rabbitTemplate: RabbitTemplate,
         val reviews = jdbcTemplate.query(sql, reviewRowMapper, brandName, size, offset)
 
         val totalElementsSql = "SELECT COUNT(*) FROM review WHERE brand_name = ?"
-        val totalElements = jdbcTemplate.queryForObject(totalElementsSql, Int::class.java, brandName) ?: 0
+        val totalElements = jdbcTemplate.queryForObject(totalElementsSql, Int::class.java, brandName)
 
         val totalPages = (totalElements + size - 1) / size
 

@@ -44,7 +44,8 @@ data class Review(
         val productNumber: Int,
         val birthDate: String,
         val gender: String,
-        val content: String
+        val content: String,
+        val scope: Int
 ) : Serializable {
     fun calculateAge(): Int {
         val birthYear = birthDate.split("-")[0].toInt()
@@ -59,7 +60,8 @@ data class ReviewDto(
         val productNumber: Int,
         val gender: String,
         val content: String,
-        val age: Int
+        val age: Int,
+        val scope: Int
 )
 fun Review.toReviewDto(): ReviewDto {
     return ReviewDto(
@@ -68,7 +70,8 @@ fun Review.toReviewDto(): ReviewDto {
             productNumber = this.productNumber,
             gender = this.gender,
             content = this.content,
-            age = this.calculateAge()
+            age = this.calculateAge(),
+            scope = this.scope
     )
 }
 

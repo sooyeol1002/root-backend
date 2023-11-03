@@ -218,7 +218,8 @@ class AuthService(private val database: Database) {
                                 productNumber = it[Reviews.productNumber],
                                 birthDate = it[Reviews.birthDate],
                                 gender = it[Reviews.gender],
-                                content = it[Reviews.content]
+                                content = it[Reviews.content],
+                                scope = it[Reviews.scope]
                         )
                     }
         }

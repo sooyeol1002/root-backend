@@ -39,6 +39,7 @@ object Reviews : LongIdTable("review") {
     val birthDate = varchar("birth_date", 15)
     val gender = varchar("gender", 10)
     val content = text("content")
+    val scope = integer("scope")
 }
 
 @Configuration
