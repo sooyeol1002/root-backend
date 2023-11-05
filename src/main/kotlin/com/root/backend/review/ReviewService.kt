@@ -6,6 +6,7 @@ import com.root.backend.Reviews
 import com.root.backend.toReviewDto
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.jdbc.core.JdbcTemplate
@@ -13,7 +14,7 @@ import org.springframework.jdbc.core.RowMapper
 import java.sql.ResultSet
 
 @Service
-class ReviewService(// private val rabbitTemplate: RabbitTemplate,
+class ReviewService(private val rabbitTemplate: RabbitTemplate,
                     private val messagingTemplate: SimpMessagingTemplate,
                     private val jdbcTemplate: JdbcTemplate) {
 
@@ -25,7 +26,8 @@ class ReviewService(// private val rabbitTemplate: RabbitTemplate,
                 birthDate = rs.getString("birth_date"),
                 gender = rs.getString("gender"),
                 content = rs.getString("content"),
-                scope = rs.getInt("scope")
+                scope = rs.getInt("scope"),
+                userId = rs.getInt("user_id")
         )
     }
 
@@ -38,6 +40,7 @@ class ReviewService(// private val rabbitTemplate: RabbitTemplate,
                 it[gender] = review.gender
                 it[content] = review.content
                 it[scope] = review.scope
+                it[userId] = review.userId
             }
         }
 

@@ -4,6 +4,7 @@ select * from identity;
 select * from profile;
 select * from event;
 select * from review;
+select * from review_answer;
 
 SELECT r.*
 FROM profile p

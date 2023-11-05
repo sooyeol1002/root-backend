@@ -58,6 +58,7 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }
 
 dependencyManagement {

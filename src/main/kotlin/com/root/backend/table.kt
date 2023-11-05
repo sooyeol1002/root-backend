@@ -40,6 +40,14 @@ object Reviews : LongIdTable("review") {
     val gender = varchar("gender", 10)
     val content = text("content")
     val scope = integer("scope")
+    val userId = integer("user_id")
+}
+
+object ReviewAnswers : LongIdTable("review_answer") {
+    val reviewId = reference("review_id", Reviews)
+    val productNumber = integer("product_number")
+    val content = text("content")
+    val userId = integer("user_id")
 }
 
 @Configuration
@@ -47,7 +55,7 @@ class AuthTableSetup(private val database: Database) {
     @PostConstruct
     fun migrateSchema() {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, Events, Reviews)
+            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, Events, Reviews, ReviewAnswers)
         }
     }
 }

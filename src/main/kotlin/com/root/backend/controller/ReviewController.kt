@@ -20,7 +20,6 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
     @PostMapping
     fun createReview(@RequestBody reviewData: Review): ResponseEntity<String> {
 
-        // RabbitMQ로 메시지 전송
         rabbitTemplate.convertAndSend("reviewExchange", "routingKey", reviewData)
 
         return ResponseEntity.ok("RabbitMQ로 전송완료")
