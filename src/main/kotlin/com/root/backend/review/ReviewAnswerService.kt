@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service
 class ReviewAnswerService(private val rabbitTemplate: RabbitTemplate) {
     val mapper = jacksonObjectMapper()
 
-    fun handleReviewAnswer(reviewAnswer: ReviewAnswer) {
+    fun processReviewAnswer(reviewAnswer: ReviewAnswer) {
         // 데이터베이스에 리뷰 응답 저장
         saveReviewAnswerToDatabase(reviewAnswer)
 
         // RabbitMQ로 메시지 보내기
-//        createReviewAnswerMessage(reviewAnswer)
+        createReviewAnswerMessage(reviewAnswer)
     }
-    private fun saveReviewAnswerToDatabase(reviewAnswer: ReviewAnswer): Long {
+    fun saveReviewAnswerToDatabase(reviewAnswer: ReviewAnswer): Long {
         // ReviewAnswers 테이블에 데이터를 삽입하는 트랜잭션
         return transaction {
             val inserted = ReviewAnswers.insert {

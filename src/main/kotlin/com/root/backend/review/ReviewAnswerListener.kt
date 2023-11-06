@@ -14,7 +14,7 @@ class ReviewAnswerListener(private val reviewAnswerService: ReviewAnswerService)
             val reviewAnswer = reviewAnswerService.mapper.readValue(reviewAnswerJson, ReviewAnswer::class.java)
 
             // ReviewAnswer 객체를 처리
-            reviewAnswerService.handleReviewAnswer(reviewAnswer)
+            reviewAnswerService.saveReviewAnswerToDatabase(reviewAnswer)
 
             println("Review Answer processed successfully: $reviewAnswer")
 

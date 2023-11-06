@@ -25,7 +25,7 @@ class ReviewAnswerController(private val reviewAnswerService: ReviewAnswerServic
         )
 
         // 리뷰 응답 처리
-        reviewAnswerService.handleReviewAnswer(reviewAnswer)
+        reviewAnswerService.processReviewAnswer(reviewAnswer)
 
         // 성공적으로 처리되었음을 응답
         return ResponseEntity.status(HttpStatus.CREATED).body("Review answer saved and message sent.")

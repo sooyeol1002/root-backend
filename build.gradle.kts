@@ -59,6 +59,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+	implementation("io.github.openfeign:feign-httpclient")
 }
 
 dependencyManagement {

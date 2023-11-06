@@ -97,3 +97,7 @@ data class ReviewAnswerDto(
         val userId: Int,
         val id: Long
 )
+data class ReviewResponse(
+        val status: String,
+        val message: String
+)
