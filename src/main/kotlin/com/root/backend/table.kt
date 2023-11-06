@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.context.annotation.Configuration
+import java.time.LocalDate
 
 object Identities : LongIdTable("identity") {
     val secret = varchar("secret", 200)
@@ -40,14 +41,18 @@ object Reviews : LongIdTable("review") {
     val gender = varchar("gender", 10)
     val content = text("content")
     val scope = integer("scope")
-    val userId = integer("user_id")
+    val userLoginId = integer("user_id")
+    val reviewAnswer = text("review_answer").nullable()
 }
 
-object ReviewAnswers : LongIdTable("review_answer") {
-    val reviewId = reference("review_id", Reviews)
-    val productNumber = integer("product_number")
-    val content = text("content")
-    val userId = integer("user_id")
+object ProductInqueries : LongIdTable("Product_inquery") {
+    val userLoginId = varchar("userLoginId", 100)
+    val username = varchar("username", 100)
+    val productId = varchar("productId", 100)
+    val inqueryCategory = varchar("inquery_category", 30)
+    val inqueryContent = largeText("inquery_content")
+    val inqueryAnswer = largeText("inquery_answer").nullable()
+    val inqueryDate = varchar("inquery_date", 50).default(LocalDate.now().toString())
 }
 
 @Configuration
@@ -55,7 +60,12 @@ class AuthTableSetup(private val database: Database) {
     @PostConstruct
     fun migrateSchema() {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(Identities, Profiles, Events, Reviews, ReviewAnswers)
+            SchemaUtils.createMissingTablesAndColumns(
+                    Identities,
+                    Profiles,
+                    Events,
+                    Reviews,
+                    ProductInqueries)
         }
     }
 }

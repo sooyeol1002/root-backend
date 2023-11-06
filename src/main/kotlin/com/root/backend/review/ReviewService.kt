@@ -1,11 +1,11 @@
 package com.root.backend.review
 
-import com.root.backend.PagedReviews
-import com.root.backend.Review
-import com.root.backend.Reviews
-import com.root.backend.toReviewDto
+import com.root.backend.*
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
@@ -40,7 +40,7 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
                 it[gender] = review.gender
                 it[content] = review.content
                 it[scope] = review.scope
-                it[userId] = review.userId
+                it[userLoginId] = review.userId
             }
         }
 
@@ -59,4 +59,38 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
 
         return PagedReviews(reviews, totalPages, totalElements)
     }
+
+    fun updateReviewAnswer(reviewId: Long, answer: String) {
+        var updatedReview: ReviewDto? = null
+        transaction {
+            Reviews.update({ Reviews.id eq reviewId }) {
+                it[reviewAnswer] = answer
+            }
+            updatedReview = selectReviewById(reviewId)?.toReviewDto()
+        }
+
+        updatedReview?.let {
+            rabbitTemplate.convertAndSend(it)
+            println("Review answer updated and message sent to RabbitMQ: $it")
+        }
+    }
+
+    private fun selectReviewById(reviewId: Long): Review? {
+        return Reviews.select { Reviews.id eq reviewId }
+                .mapNotNull { toReview(it) }
+                .singleOrNull()
+    }
+
+    private fun toReview(row: ResultRow): Review =
+            Review(
+                    id = row[Reviews.id].value,
+                    brandName = row[Reviews.brandName],
+                    productNumber = row[Reviews.productNumber],
+                    birthDate = row[Reviews.birthDate],
+                    gender = row[Reviews.gender],
+                    content = row[Reviews.content],
+                    scope = row[Reviews.scope],
+                    userId = row[Reviews.userLoginId],
+                    reviewAnswer = row[Reviews.reviewAnswer]
+            )
 }

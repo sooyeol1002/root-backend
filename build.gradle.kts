@@ -60,6 +60,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.github.openfeign:feign-httpclient")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
+	implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
 }
 
 dependencyManagement {

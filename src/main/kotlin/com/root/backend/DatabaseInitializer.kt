@@ -98,7 +98,7 @@ class DatabaseInitializer(private val database: Database) {
                     it[gender] = review.gender
                     it[content] = review.content
                     it[scope] = review.scope
-                    it[userId] = review.userId
+                    it[userLoginId] = review.userId
                 }
             }
         }

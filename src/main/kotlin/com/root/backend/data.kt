@@ -46,7 +46,8 @@ data class Review(
         val gender: String,
         val content: String,
         val scope: Int,
-        val userId: Int
+        val userId: Int,
+        val reviewAnswer: String? = null
 ) : Serializable {
     fun calculateAge(): Int {
         val birthYear = birthDate.split("-")[0].toInt()
@@ -84,20 +85,41 @@ data class PagedReviews(
         val totalElements: Int
 )
 
-data class ReviewAnswer(
-        var reviewId: Long,
-        val productNumber: Int,
-        val content: String,
-        val userId: Int,
-)
-data class ReviewAnswerDto(
-        val productNumber: Int,
-        val content: String,
-        val reviewId: Int,
-        val userId: Int,
-        val id: Long
-)
 data class ReviewResponse(
         val status: String,
         val message: String
 )
+data class ProductInquery(
+        val id: Long,
+        val userLoginId: String,
+        val username: String,
+        val productId: String,
+        val inqueryCategory: String,
+        val inqueryContent: String,
+        val inqueryAnswer: String?,
+        val inqueryDate: String
+)
+
+data class ProductInqueryDto(
+        val id: Long,
+        val userLoginId: String,
+        val username: String,
+        val productId: String,
+        val inqueryCategory: String,
+        val inqueryContent: String,
+        val inqueryAnswer: String?,
+        val inqueryDate: String
+)
+
+fun ProductInquery.toProductInqueryDto(): ProductInqueryDto {
+    return ProductInqueryDto(
+            id = this.id,
+            userLoginId = this.userLoginId,
+            username = this.username,
+            productId = this.productId,
+            inqueryCategory = this.inqueryCategory,
+            inqueryContent = this.inqueryContent,
+            inqueryAnswer = this.inqueryAnswer,
+            inqueryDate = this.inqueryDate
+    )
+}

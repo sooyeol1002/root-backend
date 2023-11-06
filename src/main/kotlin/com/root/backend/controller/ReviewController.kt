@@ -20,7 +20,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
     @PostMapping
     fun createReview(@RequestBody reviewData: Review): ResponseEntity<String> {
 
-        rabbitTemplate.convertAndSend("reviewExchange", "routingKey", reviewData)
+        rabbitTemplate.convertAndSend(reviewData)
 
         return ResponseEntity.ok("RabbitMQ로 전송완료")
     }
@@ -40,6 +40,15 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
                 "currentPage" to page
         )
         return ResponseEntity.ok(response)
+    }
+
+    @PutMapping("/{reviewId}/answer")
+    fun updateReviewAnswer(
+            @PathVariable reviewId: Long,
+            @RequestBody answer: String
+    ): ResponseEntity<String> {
+        reviewService.updateReviewAnswer(reviewId, answer)
+        return ResponseEntity.ok("리뷰 답변이 업데이트 되었습니다.")
     }
 
 }

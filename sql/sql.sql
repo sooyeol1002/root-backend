@@ -5,6 +5,7 @@ select * from profile;
 select * from event;
 select * from review;
 select * from review_answer;
+select * from product_inquery;
 
 SELECT r.*
 FROM profile p
