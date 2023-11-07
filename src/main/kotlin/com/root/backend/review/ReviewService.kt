@@ -52,25 +52,6 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
 
         return insertedId
     }
-    fun selectReviewById(reviewId: EntityID<Long>): Review? {
-        return Reviews.select { Reviews.id eq reviewId }
-                .mapNotNull { row ->
-                    Review(
-                            id = row[Reviews.id].value,
-                            brandName = row[Reviews.brandName],
-                            productId = row[Reviews.productId],
-                            birth = row[Reviews.birth],
-                            gender = row[Reviews.gender],
-                            reviewContent = row[Reviews.reviewContent],
-                            scope = row[Reviews.scope],
-                            userId = row[Reviews.userId],
-                            reviewAnswer = row[Reviews.reviewAnswer],
-                            receivedId = row[Reviews.receivedId]
-                    )
-                }
-                .singleOrNull()
-    }
-
 
     fun findReviewsByBrandNameWithPaging(brandName: String, page: Int, size: Int): PagedReviews {
         val offset = page * size
