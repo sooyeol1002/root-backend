@@ -1,6 +1,7 @@
 package com.root.backend.review
 
 import com.root.backend.*
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -22,30 +23,54 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
         Review(
                 id = rs.getLong("id"),
                 brandName = rs.getString("brand_name"),
-                productNumber = rs.getInt("product_number"),
-                birthDate = rs.getString("birth_date"),
+                productId = rs.getLong("product_number"),
+                birth = rs.getString("birth_date"),
                 gender = rs.getString("gender"),
-                content = rs.getString("content"),
+                reviewContent = rs.getString("content"),
                 scope = rs.getInt("scope"),
-                userId = rs.getInt("user_id")
+                userId = rs.getLong("user_id"),
+                receivedId = rs.getLong("received_id")
         )
     }
 
-    fun saveReceivedReview(review: Review) {
-        transaction {
+    fun saveReceivedReview(review: Review): EntityID<Long> {
+        val insertedId = transaction {
             Reviews.insert {
                 it[brandName] = review.brandName
-                it[productNumber] = review.productNumber
-                it[birthDate] = review.birthDate
+                it[productId] = review.productId
+                it[birth] = review.birth
                 it[gender] = review.gender
-                it[content] = review.content
+                it[reviewContent] = review.reviewContent
                 it[scope] = review.scope
-                it[userLoginId] = review.userId
-            }
+                it[userId] = review.userId
+                it[receivedId] = review.id
+                println("Saving received review with ID: ${review.id}")
+            } get Reviews.id
         }
 
         messagingTemplate.convertAndSend("/topic/review", review.toReviewDto())
+
+        return insertedId
     }
+    fun selectReviewById(reviewId: EntityID<Long>): Review? {
+        return Reviews.select { Reviews.id eq reviewId }
+                .mapNotNull { row ->
+                    Review(
+                            id = row[Reviews.id].value,
+                            brandName = row[Reviews.brandName],
+                            productId = row[Reviews.productId],
+                            birth = row[Reviews.birth],
+                            gender = row[Reviews.gender],
+                            reviewContent = row[Reviews.reviewContent],
+                            scope = row[Reviews.scope],
+                            userId = row[Reviews.userId],
+                            reviewAnswer = row[Reviews.reviewAnswer],
+                            receivedId = row[Reviews.receivedId]
+                    )
+                }
+                .singleOrNull()
+    }
+
 
     fun findReviewsByBrandNameWithPaging(brandName: String, page: Int, size: Int): PagedReviews {
         val offset = page * size
@@ -60,37 +85,9 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
         return PagedReviews(reviews, totalPages, totalElements)
     }
 
-    fun updateReviewAnswer(reviewId: Long, answer: String) {
-        var updatedReview: ReviewDto? = null
-        transaction {
-            Reviews.update({ Reviews.id eq reviewId }) {
-                it[reviewAnswer] = answer
-            }
-            updatedReview = selectReviewById(reviewId)?.toReviewDto()
-        }
-
-        updatedReview?.let {
-            rabbitTemplate.convertAndSend(it)
-            println("Review answer updated and message sent to RabbitMQ: $it")
-        }
+    fun sendReviewResponse(reviewResponse: ReviewResponse) {
+        rabbitTemplate.convertAndSend("review-response", reviewResponse)
+        println("Review response sent to RabbitMQ: $reviewResponse")
     }
 
-    private fun selectReviewById(reviewId: Long): Review? {
-        return Reviews.select { Reviews.id eq reviewId }
-                .mapNotNull { toReview(it) }
-                .singleOrNull()
-    }
-
-    private fun toReview(row: ResultRow): Review =
-            Review(
-                    id = row[Reviews.id].value,
-                    brandName = row[Reviews.brandName],
-                    productNumber = row[Reviews.productNumber],
-                    birthDate = row[Reviews.birthDate],
-                    gender = row[Reviews.gender],
-                    content = row[Reviews.content],
-                    scope = row[Reviews.scope],
-                    userId = row[Reviews.userLoginId],
-                    reviewAnswer = row[Reviews.reviewAnswer]
-            )
 }

@@ -213,14 +213,15 @@ class AuthService(private val database: Database) {
             Reviews.select { Reviews.brandName eq brandName }
                     .map {
                         Review(
-                                id = it[Reviews.id].value, // id는 LongIdTable에서 value 속성을 사용
+                                id = it[Reviews.id].value,
                                 brandName = it[Reviews.brandName],
-                                productNumber = it[Reviews.productNumber],
-                                birthDate = it[Reviews.birthDate],
+                                productId = it[Reviews.productId].toLong(),
+                                birth = it[Reviews.birth],
                                 gender = it[Reviews.gender],
-                                content = it[Reviews.content],
+                                reviewContent = it[Reviews.reviewContent],
                                 scope = it[Reviews.scope],
-                                userId = it[Reviews.userLoginId]
+                                userId = it[Reviews.userId].toLong(),
+                                receivedId = it[Reviews.receivedId]
                         )
                     }
         }

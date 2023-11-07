@@ -3,6 +3,8 @@ package com.root.backend
 import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
 import java.time.LocalDate
+import java.time.Period
+import java.time.format.DateTimeFormatter
 
 data class AuthProfile (
     val id: Long, // 프로필 id
@@ -41,43 +43,56 @@ data class Event (
 data class Review(
         val id: Long,
         val brandName: String,
-        val productNumber: Int,
-        val birthDate: String,
+        val productId: Long,
+        val birth: String,
         val gender: String,
-        val content: String,
+        val reviewContent: String,
         val scope: Int,
-        val userId: Int,
-        val reviewAnswer: String? = null
+        val userId: Long,
+        val reviewAnswer: String? = null,
+        val receivedId: Long
 ) : Serializable {
     fun calculateAge(): Int {
-        val birthYear = birthDate.split("-")[0].toInt()
-        val currentYear = LocalDate.now().year
-        return currentYear - birthYear
+        // "yyyymmdd" 형태의 문자열을 LocalDate 객체로 파싱
+        val birthDate = LocalDate.parse(
+                birth, DateTimeFormatter.ofPattern("yyyyMMdd")
+        )
+        // 현재 날짜
+        val currentDate = LocalDate.now()
+        // 나이 계산
+        return Period.between(birthDate, currentDate).years
     }
 }
 
 data class ReviewDto(
         val id: Long,
         val brandName: String,
-        val productNumber: Int,
+        val productId: Long,
         val gender: String,
-        val content: String,
+        val reviewContent: String,
         val age: Int,
         val scope: Int,
-        val userId: Int
+        val userId: Long,
+        val reviewAnswer: String?,
+        val receivedId: Long
 )
 fun Review.toReviewDto(): ReviewDto {
     return ReviewDto(
             id = this.id,
             brandName = this.brandName,
-            productNumber = this.productNumber,
+            productId = this.productId,
             gender = this.gender,
-            content = this.content,
+            reviewContent = this.reviewContent,
             age = this.calculateAge(),
             scope = this.scope,
-            userId = this.userId
+            userId = this.userId,
+            reviewAnswer = this.reviewAnswer,
+            receivedId = this.receivedId
     )
 }
+data class ReviewAnswerDTO(
+        val reviewAnswer: String
+)
 
 data class PagedReviews(
         val reviews: List<Review>,
@@ -86,9 +101,11 @@ data class PagedReviews(
 )
 
 data class ReviewResponse(
-        val status: String,
-        val message: String
+        val productId: Long,
+        val id: Long,
+        val reviewAnswer: String?
 )
+
 data class ProductInquery(
         val id: Long,
         val userLoginId: String,

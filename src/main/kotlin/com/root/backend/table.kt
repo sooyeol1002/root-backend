@@ -36,13 +36,14 @@ object Events : LongIdTable("event") {
 
 object Reviews : LongIdTable("review") {
     val brandName = varchar("brand_name", 255)
-    val productNumber = integer("product_number")
-    val birthDate = varchar("birth_date", 15)
+    val productId = long("product_number")
+    val birth = varchar("birth_date", 15)
     val gender = varchar("gender", 10)
-    val content = text("content")
+    val reviewContent = text("content")
     val scope = integer("scope")
-    val userLoginId = integer("user_id")
+    val userId = long("user_id")
     val reviewAnswer = text("review_answer").nullable()
+    val receivedId = long("received_id")
 }
 
 object ProductInqueries : LongIdTable("Product_inquery") {
