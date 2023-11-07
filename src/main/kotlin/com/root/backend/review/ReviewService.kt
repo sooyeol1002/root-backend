@@ -66,9 +66,9 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
         return PagedReviews(reviews, totalPages, totalElements)
     }
 
-    fun sendReviewResponse(reviewResponse: ReviewResponse) {
-        rabbitTemplate.convertAndSend("review-response", reviewResponse)
-        println("Review response sent to RabbitMQ: $reviewResponse")
-    }
+//    fun sendReviewResponse(reviewResponse: ReviewResponse) {
+//        rabbitTemplate.convertAndSend("review-response", reviewResponse)
+//        println("Review response sent to RabbitMQ: $reviewResponse")
+//    }
 
 }
