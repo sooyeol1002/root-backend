@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.transactionManager
 import org.slf4j.LoggerFactory
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -27,7 +28,9 @@ import java.nio.file.StandardCopyOption
 import java.util.UUID
 
 @Service
-class AuthService(private val database: Database) {
+class AuthService(private val database: Database,
+                  private val rabbitTemplate: RabbitTemplate
+) {
     private val logger = LoggerFactory.getLogger(this.javaClass.name)
     private val PROFILE_IMAGE_PATH = "files/profileImage"
 
@@ -101,6 +104,7 @@ class AuthService(private val database: Database) {
         }
     }
 
+
     @Auth
     fun registerProfile(
             @RequestParam token: String,
@@ -167,6 +171,17 @@ class AuthService(private val database: Database) {
                     it[this.contentType] = profileData.contentType
                 }
 
+                val response = BrandResponse(
+                    id = authProfile.id,
+                    name = profileData.brandName,
+                    representativeName = profileData.representativeName,
+                    intro = profileData.brandIntro,
+                    imageUuidName = profileData.uuidFileName
+                )
+
+                println(response)
+                rabbitTemplate.convertAndSend("company-register", response)
+                println("문의 답변 RabbitMQ로 전송완료: $response")
                 // 로그 추가
                 logger.info("brandName: $brandName")
                 logger.info("businessNumber: $businessNumber")

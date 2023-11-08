@@ -28,6 +28,7 @@ class WebMvcConfig(val authInterceptor: AuthInterceptor) : WebMvcConfigurer {
                         "http://192.168.100.152:5500",
                         "http://192.168.100.152:5000",
                         "http://192.168.100.109:8080",
+                        "http://192.168.100.159:8080",
                         ) // 로컬 호스트 origin 허용
                 .allowedMethods("*") // 모든 메서드 허용(GET, POST.....)
                 .allowCredentials(true)

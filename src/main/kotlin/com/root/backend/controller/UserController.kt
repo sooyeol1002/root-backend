@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.slf4j.LoggerFactory
+import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -23,7 +24,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/user")
-class UserController(private val authService: AuthService) {
+class UserController(private val authService: AuthService, private val resourceLoader: ResourceLoader) {
 
     private val logger = LoggerFactory.getLogger(UserController::class.java)
     private val PROFILE_IMAGE_PATH = "files/profileImage"
@@ -102,6 +103,19 @@ class UserController(private val authService: AuthService) {
 
         val imageBytes = Files.readAllBytes(imagePath)
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(imageBytes)
+    }
+    @GetMapping("/files/{uuidFilename}")
+    fun getFileImage(@PathVariable uuidFilename:String) : ResponseEntity<Any> {
+        val file = Paths.get("$PROFILE_IMAGE_PATH/$uuidFilename").toFile()
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build()
+        }
+
+        val mimeType = Files.probeContentType(file.toPath())
+        val mediaType = MediaType.parseMediaType(mimeType)
+
+        val resource = resourceLoader.getResource("file:$file")
+        return ResponseEntity.ok().contentType(mediaType).body(resource)
     }
 
     @Auth

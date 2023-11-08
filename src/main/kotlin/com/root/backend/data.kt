@@ -109,25 +109,34 @@ data class ReviewResponse(
 data class InqueryResponse(
         val id: Long,
         val productId: Long,
-        val inqueryAnswer: String?
+        val inqueryAnswer: String?,
+        val productName: String
 )
 
 data class ProductInquery(
-        val id: Long,//
-        val userLoginId: String,
-        val username: String,
-        val productId: String,//
-        val inqueryCategory: String,
-        val inqueryContent: String,
-        val inqueryAnswer: String?,//
-        val inqueryDate: String
+    val id: Long,//
+    val receivedId: Long,
+    val username: String,
+    val productId: Long,//
+    val userLoginId: String,
+    val productName: String,
+    val inqueryCategory: String,
+    val inqueryContent: String,
+    val inqueryAnswer: String?,//
+    val inqueryDate: String
+)
+
+data class InqueryAnswerDTO(
+    val inqueryAnswer: String
 )
 
 data class ProductInqueryDto(
         val id: Long,
-        val userLoginId: String,
+        val receivedId: Long,
         val username: String,
-        val productId: String,
+        val productId: Long,
+        val userLoginId: String,
+        val productName: String,
         val inqueryCategory: String,
         val inqueryContent: String,
         val inqueryAnswer: String?,
@@ -137,12 +146,30 @@ data class ProductInqueryDto(
 fun ProductInquery.toProductInqueryDto(): ProductInqueryDto {
     return ProductInqueryDto(
             id = this.id,
-            userLoginId = this.userLoginId,
+            receivedId = this.receivedId,
             username = this.username,
             productId = this.productId,
             inqueryCategory = this.inqueryCategory,
             inqueryContent = this.inqueryContent,
             inqueryAnswer = this.inqueryAnswer,
-            inqueryDate = this.inqueryDate
+            inqueryDate = this.inqueryDate,
+            productName = this.productName,
+            userLoginId = this.userLoginId
     )
 }
+
+data class Brand(
+    val id: Long,
+    val name: String,
+    val representativeName: String,
+    val intro: String,
+    val imageUuidName: String
+)
+
+data class BrandResponse(
+    val id: Long,
+    val name: String,
+    val representativeName: String,
+    val intro: String,
+    val imageUuidName: String
+)

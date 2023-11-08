@@ -47,13 +47,15 @@ object Reviews : LongIdTable("review") {
 }
 
 object ProductInqueries : LongIdTable("Product_inquery") {
-    val userLoginId = varchar("userLoginId", 100)
+    val receivedId = long("received_id")
     val username = varchar("username", 100)
-    val productId = varchar("productId", 100)
+    val productId = long("product_id")
+    val productName = varchar("product_name", 100)
     val inqueryCategory = varchar("inquery_category", 30)
     val inqueryContent = largeText("inquery_content")
     val inqueryAnswer = largeText("inquery_answer").nullable()
     val inqueryDate = varchar("inquery_date", 50).default(LocalDate.now().toString())
+    val userLoginId = varchar("user_login_id", 100)
 }
 
 @Configuration

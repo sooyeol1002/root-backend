@@ -1,6 +1,5 @@
 package com.root.backend
 
-import com.root.backend.ProductInqueries.userLoginId
 import com.root.backend.auth.util.HashUtil
 import jakarta.annotation.PostConstruct
 import org.jetbrains.exposed.dao.id.EntityID
