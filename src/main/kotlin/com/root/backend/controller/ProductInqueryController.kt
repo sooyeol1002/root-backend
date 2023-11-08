@@ -43,11 +43,11 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         @PathVariable inqueryId: Long,
         @RequestBody inqueryAnswerDTO: InqueryAnswerDTO
     ): ResponseEntity<String> {
-        val existingInquery = productInqueryService.selectInqueryById(inqueryId)
-
-        if (existingInquery != null && existingInquery.inqueryAnswer != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"이미 답변이 등록된 문의입니다.\"}")
-        }
+//        val existingInquery = productInqueryService.selectInqueryById(inqueryId)
+//
+//        if (existingInquery != null && existingInquery.inqueryAnswer != null) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"이미 답변이 등록된 문의입니다.\"}")
+//        }
 
         var updatedInquery: ProductInqueryDto? = null
 
@@ -68,7 +68,8 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
                 )
             }
 
-            inqueryResponse?.let { it2 -> productInqueryService.sendInqueryResponse(it2)}
+//            inqueryResponse?.let { it2 -> productInqueryService.sendInqueryResponse(it2)}
+            inqueryResponse?.let { it1 -> rabbitTemplate.convertAndSend("inquery-response", it1) }
             return ResponseEntity.ok("{\"message\": \"문의 답변이 업데이트 되었습니다.\"}")
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"문의를 업데이트할 수 없습니다.\"}")

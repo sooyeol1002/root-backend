@@ -59,7 +59,7 @@ class ProductInqueryService(private val rabbitTemplate: RabbitTemplate,
         return insertedId
     }
     fun sendInqueryResponse(inqueryResponse: InqueryResponse) {
-            rabbitTemplate.convertAndSend("product_inquery", inqueryResponse)
+//        rabbitTemplate.convertAndSend("product_inquery", inqueryResponse)
         println("문의 답변 RabbitMQ로 전송완료: $inqueryResponse")
     }
 
