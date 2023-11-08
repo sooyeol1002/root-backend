@@ -71,4 +71,8 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
 //        println("Review response sent to RabbitMQ: $reviewResponse")
 //    }
 
+    fun selectReviewById(reviewId: Long): Review? {
+        val sql = "SELECT * FROM review WHERE id = ?"
+        return jdbcTemplate.query(sql, reviewRowMapper, reviewId).firstOrNull()
+    }
 }

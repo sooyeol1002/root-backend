@@ -106,14 +106,20 @@ data class ReviewResponse(
         val reviewAnswer: String?
 )
 
-data class ProductInquery(
+data class InqueryResponse(
         val id: Long,
+        val productId: Long,
+        val inqueryAnswer: String?
+)
+
+data class ProductInquery(
+        val id: Long,//
         val userLoginId: String,
         val username: String,
-        val productId: String,
+        val productId: String,//
         val inqueryCategory: String,
         val inqueryContent: String,
-        val inqueryAnswer: String?,
+        val inqueryAnswer: String?,//
         val inqueryDate: String
 )
 

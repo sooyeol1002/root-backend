@@ -22,7 +22,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
     @PostMapping
     fun createReview(@RequestBody reviewData: Review): ResponseEntity<String> {
 
-        reviewService.saveReceivedReview(reviewData)
+        val savedReviewId = reviewService.saveReceivedReview(reviewData)
 
         val reviewResponse = ReviewResponse(
                 id = reviewData.receivedId,
@@ -30,8 +30,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
                 reviewAnswer = null
         )
 
-        // RabbitMQ를 사용하여 리뷰 응답을 전송
-        rabbitTemplate.messageConverter = Jackson2JsonMessageConverter()
+//        reviewService.sendReviewResponse(reviewResponse)
 //        rabbitTemplate.convertAndSend("review-response", reviewResponse)
 
         // 성공 응답 반환
@@ -60,6 +59,13 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
             @PathVariable reviewId: Long,
             @RequestBody reviewAnswerDTO: ReviewAnswerDTO
     ): ResponseEntity<String> {
+        val existingReview = reviewService.selectReviewById(reviewId)
+
+        // 이미 답변이 등록되어 있는지 확인
+        if (existingReview != null && existingReview.reviewAnswer != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"이미 답변이 등록된 리뷰입니다.\"}")
+        }
+
         var updatedReview: ReviewDto? = null
         transaction {
             Reviews.update({ Reviews.id eq reviewId }) {
