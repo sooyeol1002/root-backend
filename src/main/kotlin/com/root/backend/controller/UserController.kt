@@ -141,6 +141,28 @@ class UserController(private val authService: AuthService, private val resourceL
     }
 
     @Auth
+    @GetMapping("/brandName/review")
+    fun getBrandNameForReivew(@RequestHeader("Authorization") token: String): ResponseEntity<out Any> {
+        try {
+            val actualToken = extractToken(token) ?: return ResponseEntity.status(403).body(null)
+            val authProfile = JwtUtil.validateToken(actualToken)
+            if (authProfile == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 검증 실패")
+            }
+            val userId = EntityID(authProfile.id, Identities)
+
+            // DB에서 상호명 검색
+            val brandName = transaction {
+                Profiles.select { Profiles.identityId eq userId }.singleOrNull()?.get(Profiles.brandName)
+            } ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("브랜드 정보가 없습니다.")
+
+            return ResponseEntity.ok(mapOf("brandName" to brandName))
+        } catch (e: Exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 에러")
+        }
+    }
+
+    @Auth
     @GetMapping("/getUserInfo")
     fun getUserInfo(@RequestHeader("Authorization") token: String): ResponseEntity<Map<String, String>> {
         val actualToken = extractToken(token) ?: return ResponseEntity.status(403).body(null)

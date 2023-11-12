@@ -12,6 +12,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/reviews")
@@ -22,7 +23,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
     @PostMapping
     fun createReview(@RequestBody reviewData: Review): ResponseEntity<String> {
 
-        val savedReviewId = reviewService.saveReceivedReview(reviewData)
+//        val savedReviewId = reviewService.saveReceivedReview(reviewData)
 
         val reviewResponse = ReviewResponse(
                 id = reviewData.receivedId,
@@ -37,11 +38,11 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok("리뷰가 처리되었습니다. ID: ${reviewResponse.id}")
     }
 
-    @GetMapping("/get")
+    @GetMapping("/unanswered")
     fun getReviewsByBrandName(
             @RequestHeader("Authorization") token: String,
             @RequestParam(defaultValue = "0") page: Int,
-            @RequestParam(defaultValue = "10") size: Int
+            @RequestParam(defaultValue = "5") size: Int
     ): ResponseEntity<Map<String, Any>> {
         val profile = authService.getUserProfileFromToken(token) ?: return ResponseEntity.badRequest().build()
         val reviewsPage = reviewService.findReviewsByBrandNameWithPaging(profile.brandName, page, size)
@@ -51,6 +52,8 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
                 "totalElements" to reviewsPage.totalElements,
                 "currentPage" to page
         )
+        println("----------------------------------------unanswered$response")
+        println(reviewsPage.reviews.map { it.toReviewDto() })
         return ResponseEntity.ok(response)
     }
 
@@ -71,7 +74,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
             Reviews.update({ Reviews.id eq reviewId }) {
                 it[reviewAnswer] = reviewAnswerDTO.reviewAnswer
             }
-            updatedReview = selectReviewById(reviewId)?.toReviewDto()
+            updatedReview = existingReview?.toReviewDto()
         }
 
         // 업데이트된 리뷰가 있으면 RabbitMQ로 전송
@@ -90,23 +93,46 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         // 리뷰 업데이트에 실패했다면 에러 메시지 반환
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"리뷰를 업데이트할 수 없습니다.\"}")
     }
-    private fun selectReviewById(reviewId: Long): Review? {
-        return Reviews.select { Reviews.id eq reviewId }
-                .mapNotNull { toReview(it) }
-                .singleOrNull()
+
+    @GetMapping("/answered")
+    fun getAnsweredReviewsPaged(
+        @RequestHeader("Authorization") token: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int
+    ): ResponseEntity<Map<String, Any>> {
+        val profile = authService.getUserProfileFromToken(token) ?: return ResponseEntity.badRequest().build()
+        val answeredReviewsPage = reviewService.findAnsweredReviewsWithPaging(profile.brandName, page, size)
+        val response: Map<String, Any> = mapOf(
+            "content" to answeredReviewsPage.reviews.map { it.toReviewDto() },
+            "totalPages" to answeredReviewsPage.totalPages,
+            "totalElements" to answeredReviewsPage.totalElements,
+            "currentPage" to page
+        )
+
+        println("-----------------------------answered$response")
+        println(answeredReviewsPage.reviews.map { it.toReviewDto() })
+        // 페이징된 데이터 응답
+        return ResponseEntity.ok(response)
     }
-    private fun toReview(row: ResultRow): Review =
-            Review(
-                    id = row[Reviews.id].value,
-                    brandName = row[Reviews.brandName],
-                    productId = row[Reviews.productId],
-                    birth = row[Reviews.birth],
-                    gender = row[Reviews.gender],
-                    reviewContent = row[Reviews.reviewContent],
-                    scope = row[Reviews.scope],
-                    userId = row[Reviews.userId],
-                    reviewAnswer = row[Reviews.reviewAnswer],
-                    receivedId = row[Reviews.receivedId]
-            )
+
+
+//    private fun selectReviewById(reviewId: Long): Review? {
+//        return Reviews.select { Reviews.id eq reviewId }
+//                .mapNotNull { toReview(it) }
+//                .singleOrNull()
+//    }
+//    private fun toReview(row: ResultRow): Review =
+//            Review(
+//                    id = row[Reviews.id].value,
+//                    brandName = row[Reviews.brandName],
+//                    productId = row[Reviews.productId],
+//                    birth = row[Reviews.birth],
+//                    gender = row[Reviews.gender],
+//                    reviewContent = row[Reviews.reviewContent],
+//                    scope = row[Reviews.scope],
+//                    userId = row[Reviews.userId],
+//                    reviewAnswer = row[Reviews.reviewAnswer],
+//                    receivedId = row[Reviews.receivedId]
+//            )
 
 }
