@@ -68,6 +68,32 @@ class ProductInqueryService(private val rabbitTemplate: RabbitTemplate,
         return jdbcTemplate.query(sql, inqueryRowMapper, inqueryId).firstOrNull()
     }
 
+    fun findUnansweredInquiriesWithPaging(page: Int, size: Int): PagedProductInqueries {
+        val offset = page * size
+        val sql = "SELECT * FROM product_inquery WHERE inquery_answer IS NULL OR inquery_answer = '' LIMIT ? OFFSET ?"
+        val inqueries = jdbcTemplate.query(sql, inqueryRowMapper, size, offset)
+
+        val countSql = "SELECT COUNT(*) FROM product_inquery WHERE inquery_answer IS NULL OR inquery_answer = ''"
+        val totalInquiries = jdbcTemplate.queryForObject(countSql, Int::class.java) ?: 0
+
+        val totalPages = (totalInquiries + size - 1) / size
+
+        return PagedProductInqueries(inqueries, totalPages, totalInquiries)
+    }
+
+    fun findAnsweredInquiriesWithPaging(page: Int, size: Int): PagedProductInqueries {
+        val offset = page * size
+        val sql = "SELECT * FROM product_inquery WHERE inquery_answer IS NOT NULL AND inquery_answer <> '' LIMIT ? OFFSET ?"
+        val inqueries = jdbcTemplate.query(sql, inqueryRowMapper, size, offset)
+
+        val countSql = "SELECT COUNT(*) FROM product_inquery WHERE inquery_answer IS NOT NULL AND inquery_answer <> ''"
+        val totalInquiries = jdbcTemplate.queryForObject(countSql, Int::class.java) ?: 0
+
+        val totalPages = (totalInquiries + size - 1) / size
+
+        return PagedProductInqueries(inqueries, totalPages, totalInquiries)
+    }
+
 //    fun ResultRow.toProductInquery(): ProductInquery {
 //        return ProductInquery(
 //                id = this[ProductInqueries.id].value,

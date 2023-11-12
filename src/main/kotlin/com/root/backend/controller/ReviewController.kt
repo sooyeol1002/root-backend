@@ -110,24 +110,4 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok(response)
     }
 
-
-//    private fun selectReviewById(reviewId: Long): Review? {
-//        return Reviews.select { Reviews.id eq reviewId }
-//                .mapNotNull { toReview(it) }
-//                .singleOrNull()
-//    }
-//    private fun toReview(row: ResultRow): Review =
-//            Review(
-//                    id = row[Reviews.id].value,
-//                    brandName = row[Reviews.brandName],
-//                    productId = row[Reviews.productId],
-//                    birth = row[Reviews.birth],
-//                    gender = row[Reviews.gender],
-//                    reviewContent = row[Reviews.reviewContent],
-//                    scope = row[Reviews.scope],
-//                    userId = row[Reviews.userId],
-//                    reviewAnswer = row[Reviews.reviewAnswer],
-//                    receivedId = row[Reviews.receivedId]
-//            )
-
 }

@@ -38,6 +38,38 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok("문의가 처리되었습니다. ID: ${inqueryResponse.id}")
     }
 
+    @GetMapping("/unanswered")
+    fun getUnansweredInquiries(
+        @RequestHeader("Authorization") token: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int
+    ): ResponseEntity<Map<String, Any>> {
+        val unansweredInquiries = productInqueryService.findUnansweredInquiriesWithPaging(page, size)
+        val response: Map<String, Any> = mapOf(
+            "content" to unansweredInquiries.inqueries.map { it.toProductInqueryDto() },
+            "totalPages" to unansweredInquiries.totalPages,
+            "totalElements" to unansweredInquiries.totalElements,
+            "currentPage" to page
+        )
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/answered")
+    fun getAnsweredInquiries(
+        @RequestHeader("Authorization") token: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int
+    ): ResponseEntity<Map<String, Any>> {
+        val answeredInquiries = productInqueryService.findAnsweredInquiriesWithPaging(page, size)
+        val response: Map<String, Any> = mapOf(
+            "content" to answeredInquiries.inqueries.map { it.toProductInqueryDto() },
+            "totalPages" to answeredInquiries.totalPages,
+            "totalElements" to answeredInquiries.totalElements,
+            "currentPage" to page
+        )
+        return ResponseEntity.ok(response)
+    }
+
     @PutMapping("/{inqueryId}/answer")
     fun updateInqueryAnswer(
         @PathVariable inqueryId: Long,

@@ -158,12 +158,10 @@ fun ProductInquery.toProductInqueryDto(): ProductInqueryDto {
     )
 }
 
-data class Brand(
-    val id: Long,
-    val name: String,
-    val representativeName: String,
-    val intro: String,
-    val imageUuidName: String
+data class PagedProductInqueries(
+    val inqueries: List<ProductInquery>,
+    val totalPages: Int,
+    val totalElements: Int
 )
 
 data class BrandResponse(
