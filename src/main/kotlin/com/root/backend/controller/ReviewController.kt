@@ -64,11 +64,6 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
     ): ResponseEntity<String> {
         val existingReview = reviewService.selectReviewById(reviewId)
 
-        // 이미 답변이 등록되어 있는지 확인
-        if (existingReview != null && existingReview.reviewAnswer != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"이미 답변이 등록된 리뷰입니다.\"}")
-        }
-
         var updatedReview: ReviewDto? = null
         transaction {
             Reviews.update({ Reviews.id eq reviewId }) {
