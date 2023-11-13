@@ -3,12 +3,11 @@ package com.root.backend.productInquery
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.root.backend.*
+import com.root.backend.Reviews.brandName
+import com.root.backend.controller.UserController
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.jdbc.core.JdbcTemplate
@@ -59,7 +58,7 @@ class ProductInqueryService(private val rabbitTemplate: RabbitTemplate,
         return insertedId
     }
     fun sendInqueryResponse(inqueryResponse: InqueryResponse) {
-//        rabbitTemplate.convertAndSend("product_inquery", inqueryResponse)
+        rabbitTemplate.convertAndSend("product_inquery", inqueryResponse)
         println("문의 답변 RabbitMQ로 전송완료: $inqueryResponse")
     }
 
@@ -68,30 +67,41 @@ class ProductInqueryService(private val rabbitTemplate: RabbitTemplate,
         return jdbcTemplate.query(sql, inqueryRowMapper, inqueryId).firstOrNull()
     }
 
-    fun findUnansweredInquiriesWithPaging(page: Int, size: Int): PagedProductInqueries {
+    fun findUnansweredInquiriesWithPaging(page: Int, size: Int, brandName: String): PagedProductInqueries {
         val offset = page * size
-        val sql = "SELECT * FROM product_inquery WHERE inquery_answer IS NULL OR inquery_answer = '' LIMIT ? OFFSET ?"
-        val inqueries = jdbcTemplate.query(sql, inqueryRowMapper, size, offset)
+        val likePattern = "%$brandName%"
+        val sql = "SELECT * FROM product_inquery " +
+                "WHERE (inquery_answer IS NULL OR inquery_answer = '') " +
+                "AND product_name LIKE ? LIMIT ? OFFSET ?"
+        val inqueries = jdbcTemplate.query(sql, inqueryRowMapper, likePattern, size, offset)
 
-        val countSql = "SELECT COUNT(*) FROM product_inquery WHERE inquery_answer IS NULL OR inquery_answer = ''"
-        val totalInquiries = jdbcTemplate.queryForObject(countSql, Int::class.java) ?: 0
+        val countSql = "SELECT COUNT(*) FROM product_inquery " +
+                "WHERE (inquery_answer IS NULL OR inquery_answer = '') " +
+                "AND product_name LIKE ?"
+        val totalInquiries = jdbcTemplate.queryForObject(countSql, arrayOf(likePattern), Int::class.java)
 
         val totalPages = (totalInquiries + size - 1) / size
 
         return PagedProductInqueries(inqueries, totalPages, totalInquiries)
     }
 
-    fun findAnsweredInquiriesWithPaging(page: Int, size: Int): PagedProductInqueries {
+    fun findAnsweredInquiriesWithPaging(page: Int, size: Int, brandName: String): PagedProductInqueries {
         val offset = page * size
-        val sql = "SELECT * FROM product_inquery WHERE inquery_answer IS NOT NULL AND inquery_answer <> '' LIMIT ? OFFSET ?"
-        val inqueries = jdbcTemplate.query(sql, inqueryRowMapper, size, offset)
+        val likePattern = "%${brandName}%"
+        val sql = "SELECT * FROM product_inquery " +
+                "WHERE inquery_answer IS NOT NULL " +
+                "AND inquery_answer <> '' " +
+                "AND product_name LIKE ? LIMIT ? OFFSET ?"
+        val inquiries = jdbcTemplate.query(sql, inqueryRowMapper, likePattern, size, offset)
 
-        val countSql = "SELECT COUNT(*) FROM product_inquery WHERE inquery_answer IS NOT NULL AND inquery_answer <> ''"
-        val totalInquiries = jdbcTemplate.queryForObject(countSql, Int::class.java) ?: 0
+        val countSql = "SELECT COUNT(*) FROM product_inquery " +
+                "WHERE inquery_answer IS NOT NULL " +
+                "AND inquery_answer <> '' AND product_name LIKE ?"
+        val totalInquiries = jdbcTemplate.queryForObject(countSql, arrayOf(likePattern), Int::class.java)
 
         val totalPages = (totalInquiries + size - 1) / size
 
-        return PagedProductInqueries(inqueries, totalPages, totalInquiries)
+        return PagedProductInqueries(inquiries, totalPages, totalInquiries)
     }
 
 //    fun ResultRow.toProductInquery(): ProductInquery {

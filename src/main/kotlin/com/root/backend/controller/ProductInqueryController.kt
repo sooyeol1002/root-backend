@@ -3,7 +3,6 @@ package com.root.backend.controller
 import com.root.backend.*
 import com.root.backend.productInquery.ProductInqueryService
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
@@ -16,7 +15,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/inqueries")
 class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
-                               private val productInqueryService: ProductInqueryService) {
+                               private val productInqueryService: ProductInqueryService,
+                               private val userController: UserController) {
 
 
     private val logger = LoggerFactory.getLogger(ProductInqueryController::class.java)
@@ -43,8 +43,17 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         @RequestHeader("Authorization") token: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int
-    ): ResponseEntity<Map<String, Any>> {
-        val unansweredInquiries = productInqueryService.findUnansweredInquiriesWithPaging(page, size)
+    ): ResponseEntity<out Map<String, Any?>> {
+
+        val brandNameResponse = userController.getBrandName(token)
+        val brandName = if (brandNameResponse.statusCode == HttpStatus.OK) {
+            brandNameResponse.body
+        } else {
+            // 브랜드명을 가져오는데 실패한 경우 오류 응답
+            return ResponseEntity.status(brandNameResponse.statusCode).body(mapOf("error" to brandNameResponse.body))
+        }
+
+        val unansweredInquiries = productInqueryService.findUnansweredInquiriesWithPaging(page, size, brandName!!)
         val response: Map<String, Any> = mapOf(
             "content" to unansweredInquiries.inqueries.map { it.toProductInqueryDto() },
             "totalPages" to unansweredInquiries.totalPages,
@@ -59,8 +68,17 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         @RequestHeader("Authorization") token: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int
-    ): ResponseEntity<Map<String, Any>> {
-        val answeredInquiries = productInqueryService.findAnsweredInquiriesWithPaging(page, size)
+    ): ResponseEntity<out Map<String, Any?>> {
+
+        val brandNameResponse = userController.getBrandName(token)
+        val brandName = if (brandNameResponse.statusCode == HttpStatus.OK) {
+            brandNameResponse.body
+        } else {
+            // 브랜드명을 가져오는데 실패한 경우 오류 응답
+            return ResponseEntity.status(brandNameResponse.statusCode).body(mapOf("error" to brandNameResponse.body))
+        }
+
+        val answeredInquiries = productInqueryService.findAnsweredInquiriesWithPaging(page, size, brandName!!)
         val response: Map<String, Any> = mapOf(
             "content" to answeredInquiries.inqueries.map { it.toProductInqueryDto() },
             "totalPages" to answeredInquiries.totalPages,
@@ -100,7 +118,7 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
                 )
             }
 
-//            inqueryResponse?.let { it2 -> productInqueryService.sendInqueryResponse(it2)}
+            inqueryResponse?.let { it2 -> productInqueryService.sendInqueryResponse(it2)}
             inqueryResponse?.let { it1 -> rabbitTemplate.convertAndSend("inquery-response", it1) }
             return ResponseEntity.ok("{\"message\": \"문의 답변이 업데이트 되었습니다.\"}")
         }

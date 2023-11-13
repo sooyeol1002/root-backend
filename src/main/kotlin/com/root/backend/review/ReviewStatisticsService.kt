@@ -51,7 +51,11 @@ class ReviewStatisticsService {
     fun getGenderStatistics(brandName: String): Map<String, Int> {
         return transaction {
             Reviews.select { Reviews.brandName eq brandName}.map { row ->
-                row[Reviews.gender]
+                when (row[Reviews.gender]) {
+                    "남", "남성", "male" -> "남"
+                    "여", "여성", "female"-> "여"
+                    else -> row[Reviews.gender]
+                }
             }.groupingBy { it }
                     .eachCount()
         }
