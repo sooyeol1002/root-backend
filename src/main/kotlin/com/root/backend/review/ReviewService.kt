@@ -82,7 +82,7 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
 
     fun findAnsweredReviewsWithPaging(brandName: String, page: Int, size: Int): PagedReviews {
         val offset = page * size
-        val sql = "SELECT * FROM review WHERE review_answer IS NOT NULL AND review_answer <> '' AND brand_name = ? ORDER BY id DESC  LIMIT ? OFFSET ?"
+        val sql = "SELECT * FROM review WHERE review_answer IS NOT NULL AND review_answer <> '' AND brand_name = ? ORDER BY id DESC LIMIT ? OFFSET ?"
         val reviews = jdbcTemplate.query(sql, reviewRowMapper, brandName, size, offset)
 
         val countSql = "SELECT COUNT(*) FROM review WHERE review_answer IS NOT NULL AND review_answer <> '' AND brand_name = ?"

@@ -72,7 +72,7 @@ class ProductInqueryService(private val rabbitTemplate: RabbitTemplate,
         val likePattern = "%$brandName%"
         val sql = "SELECT * FROM product_inquery " +
                 "WHERE (inquery_answer IS NULL OR inquery_answer = '') " +
-                "AND product_name LIKE ? LIMIT ? OFFSET ?"
+                "AND product_name LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?"
         val inqueries = jdbcTemplate.query(sql, inqueryRowMapper, likePattern, size, offset)
 
         val countSql = "SELECT COUNT(*) FROM product_inquery " +
@@ -91,7 +91,7 @@ class ProductInqueryService(private val rabbitTemplate: RabbitTemplate,
         val sql = "SELECT * FROM product_inquery " +
                 "WHERE inquery_answer IS NOT NULL " +
                 "AND inquery_answer <> '' " +
-                "AND product_name LIKE ? LIMIT ? OFFSET ?"
+                "AND product_name LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?"
         val inquiries = jdbcTemplate.query(sql, inqueryRowMapper, likePattern, size, offset)
 
         val countSql = "SELECT COUNT(*) FROM product_inquery " +
