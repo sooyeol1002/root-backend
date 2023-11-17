@@ -223,22 +223,26 @@ class AuthService(private val database: Database,
         }
     }
 
-    fun findReviewsByBrandName(brandName: String): List<Review> {
-        return transaction {
-            Reviews.select { Reviews.brandName eq brandName }
-                    .map {
-                        Review(
-                                id = it[Reviews.id].value,
-                                brandName = it[Reviews.brandName],
-                                productId = it[Reviews.productId].toLong(),
-                                birth = it[Reviews.birth],
-                                gender = it[Reviews.gender],
-                                reviewContent = it[Reviews.reviewContent],
-                                scope = it[Reviews.scope],
-                                userId = it[Reviews.userId].toLong(),
-                                receivedId = it[Reviews.receivedId]
-                        )
-                    }
-        }
-    }
+//    fun findReviewsByBrandName(brandName: String): List<Review> {
+//        return transaction {
+//            Reviews.select { Reviews.brandName eq brandName }
+//                    .map {
+//                        Review(
+//                                id = it[Reviews.id].value,
+//                                brandName = it[Reviews.brandName],
+//                                productId = it[Reviews.productId].toLong(),
+//                                birth = it[Reviews.birth],
+//                                gender = it[Reviews.gender],
+//                                reviewContent = it[Reviews.reviewContent],
+//                                scope = it[Reviews.scope],
+//                                userId = it[Reviews.userId].toLong(),
+//                                receivedId = it[Reviews.receivedId,
+//
+//
+//
+//
+//                        )
+//                    }
+//        }
+//    }
 }

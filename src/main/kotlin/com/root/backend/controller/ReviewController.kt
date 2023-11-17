@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @RestController
 @RequestMapping("/reviews")
@@ -25,10 +27,13 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
 
 //        val savedReviewId = reviewService.saveReceivedReview(reviewData)
 
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val currentDateTime = LocalDateTime.now().format(formatter)
         val reviewResponse = ReviewResponse(
                 id = reviewData.receivedId,
                 productId = reviewData.productId,
-                reviewAnswer = null
+                reviewAnswer = null,
+                currentTime = currentDateTime
         )
 
 //        reviewService.sendReviewResponse(reviewResponse)
@@ -75,11 +80,14 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         // 업데이트된 리뷰가 있으면 RabbitMQ로 전송
         updatedReview?.let {
             val reviewResponse = it.reviewAnswer?.let { it1 ->
-                ReviewResponse(
-                        productId = it.productId,
-                        id = it.receivedId,
-                        reviewAnswer = it1
-                )
+                it.currentTime?.let { it2 ->
+                    ReviewResponse(
+                            productId = it.productId,
+                            id = it.receivedId,
+                            currentTime = it2,
+                            reviewAnswer = it1
+                    )
+                }
             }
 //            reviewResponse?.let { it1 -> reviewService.sendReviewResponse(it1) }
             return ResponseEntity.ok("{\"message\": \"리뷰 답변이 업데이트 되었습니다.\"}")

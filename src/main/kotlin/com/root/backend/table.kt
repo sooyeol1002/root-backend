@@ -1,5 +1,6 @@
 package com.root.backend
 
+import com.root.backend.ProductInqueries.default
 import jakarta.annotation.PostConstruct
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.Database
@@ -44,6 +45,7 @@ object Reviews : LongIdTable("review") {
     val userId = long("user_id")
     val reviewAnswer = text("review_answer").nullable()
     val receivedId = long("received_id")
+    val currentTime = varchar("review_date", 30).nullable()
 }
 
 object ProductInqueries : LongIdTable("Product_inquery") {

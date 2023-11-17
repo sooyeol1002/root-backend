@@ -16,12 +16,16 @@ import org.springframework.stereotype.Service
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import java.sql.ResultSet
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 class ReviewService(private val rabbitTemplate: RabbitTemplate,
                     private val messagingTemplate: SimpMessagingTemplate,
                     private val jdbcTemplate: JdbcTemplate) {
 
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val currentDateTime = LocalDateTime.now().format(formatter)
     private val reviewRowMapper = RowMapper { rs: ResultSet, _: Int ->
         Review(
                 id = rs.getLong("id"),
@@ -34,6 +38,7 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
                 userId = rs.getLong("user_id"),
                 receivedId = rs.getLong("received_id"),
                 reviewAnswer = rs.getString("review_answer"),
+                currentTime = rs.getString("review_date")
         )
     }
 
@@ -48,6 +53,7 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
                 it[scope] = review.scope
                 it[userId] = review.userId
                 it[receivedId] = review.id
+                it[currentTime] = currentDateTime
                 println("Saving received review with ID: ${review.id}")
             } get Reviews.id
         }

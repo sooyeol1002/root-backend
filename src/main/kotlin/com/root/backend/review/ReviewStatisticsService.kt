@@ -1,11 +1,14 @@
 package com.root.backend.review
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.root.backend.Review
 import com.root.backend.Reviews
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Service
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 
 @Service
@@ -40,7 +43,8 @@ class ReviewStatisticsService {
                     scope = row[Reviews.scope],
                     userId = row[Reviews.userId],
                     reviewAnswer = row[Reviews.reviewAnswer],
-                    receivedId = row[Reviews.receivedId]
+                    receivedId = row[Reviews.receivedId],
+                    currentTime = row[Reviews.currentTime].toString()
             )
         } catch (e: Exception) {
             e.printStackTrace()
@@ -60,4 +64,17 @@ class ReviewStatisticsService {
                     .eachCount()
         }
     }
+
+    fun getProductScopeStatistics(brandName: String): String {
+        val statisticsMap = transaction {
+            Reviews.select { Reviews.brandName eq brandName }
+                    .mapNotNull { rowToReview(it) }
+                    .groupBy { it.productId }
+                    .mapValues { (_, reviews) ->
+                        reviews.map { it.scope }.average()
+                    }
+        }
+        return ObjectMapper().writeValueAsString(statisticsMap)
+    }
+
 }

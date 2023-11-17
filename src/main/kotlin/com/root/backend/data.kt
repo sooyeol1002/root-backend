@@ -3,6 +3,7 @@ package com.root.backend
 import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
 
@@ -50,7 +51,8 @@ data class Review(
         val scope: Int,
         val userId: Long,
         val reviewAnswer: String? = null,
-        val receivedId: Long
+        val receivedId: Long,
+        val currentTime : String?
 ) : Serializable {
     fun calculateAge(): Int {
         // "yyyymmdd" 형태의 문자열을 LocalDate 객체로 파싱
@@ -74,7 +76,8 @@ data class ReviewDto(
         val scope: Int,
         val userId: Long,
         val reviewAnswer: String?,
-        val receivedId: Long
+        val receivedId: Long,
+        val currentTime : String?
 )
 fun Review.toReviewDto(): ReviewDto {
     return ReviewDto(
@@ -87,7 +90,8 @@ fun Review.toReviewDto(): ReviewDto {
             scope = this.scope,
             userId = this.userId,
             reviewAnswer = this.reviewAnswer,
-            receivedId = this.receivedId
+            receivedId = this.receivedId,
+            currentTime = this.currentTime
     )
 }
 data class ReviewAnswerDTO(
@@ -103,7 +107,15 @@ data class PagedReviews(
 data class ReviewResponse(
         val productId: Long,
         val id: Long,
-        val reviewAnswer: String?
+        val reviewAnswer: String?,
+        val currentTime: String
+)
+
+data class ReviewPost(
+        val productId: Long,
+        val id: Long,
+        val reviewAnswer: String?,
+        val currentTime: String
 )
 
 data class InqueryResponse(
