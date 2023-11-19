@@ -25,14 +25,5 @@ class ReviewListener(private val reviewService: ReviewService) {
         }
     }
 
-//    @RabbitListener(queues = ["review-response"])
-//    fun processReviewAnswer(review: Review) {
-//        if (review.id != null && review.reviewAnswer != null) {
-//            reviewService.updateReviewAnswer(review.id, review.reviewAnswer)
-//            println("Review answer updated: $review")
-//        } else {
-//            println("No action required: Review answer is null or review ID is missing.")
-//        }
-//    }
 
 }
