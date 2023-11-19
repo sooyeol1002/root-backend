@@ -2,6 +2,7 @@ package com.root.backend.controller
 
 import com.root.backend.auth.AuthService
 import com.root.backend.auth.util.JwtUtil
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import java.util.*
 
-//@CrossOrigin(origins = ["http://localhost:5000"], allowCredentials = "true")
+@Tag(name="인증처리API")
 @RestController
 @RequestMapping("/auth")
 class AuthController(private val service: AuthService) {

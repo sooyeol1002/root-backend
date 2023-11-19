@@ -48,7 +48,6 @@ dependencies {
 
 	// spring-data-jdbc 내장, 데이터소스 객체 생성 자동화
 	// spring transaction 호환, @Transaction
-	// 스프링 트랜잭션 매니저를 안 써야 더 디테일한 처리를 할 수 있음.
 	implementation("org.jetbrains.exposed:exposed-spring-boot-starter:$exposedVersion")
 	implementation("com.auth0:java-jwt:4.4.0")
 	implementation("at.favre.lib:bcrypt:0.10.2")
@@ -62,6 +61,10 @@ dependencies {
 	implementation("io.github.openfeign:feign-httpclient")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
 	implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+
+	// https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+
 }
 
 dependencyManagement {

@@ -3,7 +3,6 @@ package com.root.backend
 import org.springframework.web.multipart.MultipartFile
 import java.io.Serializable
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
 
@@ -19,8 +18,6 @@ val users = listOf(
     User(2L, "user2", "pass2"),
     User(3L, "user3", "pass3")
 )
-
-data class LoginRequest(val username: String, val password: String)
 
 data class Profile(
         val brandName : String, // 브랜드명
@@ -94,6 +91,7 @@ fun Review.toReviewDto(): ReviewDto {
             currentTime = this.currentTime
     )
 }
+
 data class ReviewAnswerDTO(
         val reviewAnswer: String
 )
@@ -105,13 +103,6 @@ data class PagedReviews(
 )
 
 data class ReviewResponse(
-        val productId: Long,
-        val id: Long,
-        val reviewAnswer: String?,
-        val currentTime: String
-)
-
-data class ReviewPost(
         val productId: Long,
         val id: Long,
         val reviewAnswer: String?,

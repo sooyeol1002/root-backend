@@ -63,10 +63,10 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
         return insertedId
     }
 
-//    fun sendReviewResponse(reviewResponse: ReviewResponse) {
-//        rabbitTemplate.convertAndSend("review-response", reviewResponse)
-//        println("Review response sent to RabbitMQ: $reviewResponse")
-//    }
+    fun sendReviewResponse(reviewResponse: ReviewResponse) {
+        rabbitTemplate.convertAndSend("review-response", reviewResponse)
+        println("Review response sent to RabbitMQ: $reviewResponse")
+    }
 
     fun selectReviewById(reviewId: Long): Review? {
         val sql = "SELECT * FROM review WHERE id = ?"

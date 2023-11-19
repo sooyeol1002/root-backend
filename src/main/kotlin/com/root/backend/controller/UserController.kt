@@ -6,6 +6,9 @@ import com.root.backend.Profiles
 import com.root.backend.auth.*
 import com.root.backend.auth.util.JwtUtil
 import com.root.backend.auth.util.JwtUtil.extractToken
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
@@ -22,13 +25,14 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 
+@Tag(name = "유저관리처리 API")
 @RestController
 @RequestMapping("/user")
 class UserController(private val authService: AuthService, private val resourceLoader: ResourceLoader) {
 
     private val logger = LoggerFactory.getLogger(UserController::class.java)
     private val PROFILE_IMAGE_PATH = "files/profileImage"
-
+    @Operation(summary = "프로필 등록", security = [SecurityRequirement(name = "bearer-key")])
     @Auth
     @PostMapping("/register", consumes = ["multipart/form-data"])
     fun registProfile(
@@ -73,6 +77,7 @@ class UserController(private val authService: AuthService, private val resourceL
         }
     }
 
+    @Operation(summary = "프로필 이미지 불러오기", security = [SecurityRequirement(name = "bearer-key")])
     @Auth
     @GetMapping("/profileImage/{userId}/{uuid}")
     fun getProfileImage(@RequestHeader("Authorization") token: String,
@@ -118,6 +123,7 @@ class UserController(private val authService: AuthService, private val resourceL
         return ResponseEntity.ok().contentType(mediaType).body(resource)
     }
 
+    @Operation(summary = "브랜드명 불러오기", security = [SecurityRequirement(name = "bearer-key")])
     @Auth
     @GetMapping("/brandName")
     fun getBrandName(@RequestHeader("Authorization") token: String): ResponseEntity<String> {
@@ -140,6 +146,7 @@ class UserController(private val authService: AuthService, private val resourceL
         }
     }
 
+    @Operation(summary = "브랜드명으로 리뷰 불러오기", security = [SecurityRequirement(name = "bearer-key")])
     @Auth
     @GetMapping("/brandName/review")
     fun getBrandNameForReivew(@RequestHeader("Authorization") token: String): ResponseEntity<out Any> {
@@ -162,6 +169,7 @@ class UserController(private val authService: AuthService, private val resourceL
         }
     }
 
+    @Operation(summary = "유저정보 불러오기", security = [SecurityRequirement(name = "bearer-key")])
     @Auth
     @GetMapping("/getUserInfo")
     fun getUserInfo(@RequestHeader("Authorization") token: String): ResponseEntity<Map<String, String>> {

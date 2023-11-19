@@ -2,6 +2,9 @@ package com.root.backend.controller
 
 import com.root.backend.*
 import com.root.backend.productInquery.ProductInqueryService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -12,6 +15,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
+@Tag(name = "문의관련API")
 @RestController
 @RequestMapping("/inqueries")
 class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
@@ -21,7 +25,7 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
 
     private val logger = LoggerFactory.getLogger(ProductInqueryController::class.java)
 
-
+    @Operation(summary = "문의받기")
     @PostMapping
     fun createInquery(@RequestBody inqueryData: ProductInquery): ResponseEntity<String> {
 
@@ -38,6 +42,7 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok("문의가 처리되었습니다. ID: ${inqueryResponse.id}")
     }
 
+    @Operation(summary = "미답변 문의 페이징")
     @GetMapping("/unanswered")
     fun getUnansweredInquiries(
         @RequestHeader("Authorization") token: String,
@@ -63,6 +68,7 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok(response)
     }
 
+    @Operation(summary = "답변완료 문의 페이징")
     @GetMapping("/answered")
     fun getAnsweredInquiries(
         @RequestHeader("Authorization") token: String,
@@ -88,16 +94,17 @@ class ProductInqueryController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok(response)
     }
 
+    @Operation(summary = "문의 답변")
     @PutMapping("/{inqueryId}/answer")
     fun updateInqueryAnswer(
         @PathVariable inqueryId: Long,
         @RequestBody inqueryAnswerDTO: InqueryAnswerDTO
     ): ResponseEntity<String> {
-//        val existingInquery = productInqueryService.selectInqueryById(inqueryId)
-//
-//        if (existingInquery != null && existingInquery.inqueryAnswer != null) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"이미 답변이 등록된 문의입니다.\"}")
-//        }
+        val existingInquery = productInqueryService.selectInqueryById(inqueryId)
+
+        if (existingInquery != null && existingInquery.inqueryAnswer != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"error\": \"이미 답변이 등록된 문의입니다.\"}")
+        }
 
         var updatedInquery: ProductInqueryDto? = null
 

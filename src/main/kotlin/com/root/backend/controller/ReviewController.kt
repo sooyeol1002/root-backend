@@ -3,6 +3,8 @@ package com.root.backend.controller
 import com.root.backend.*
 import com.root.backend.auth.AuthService
 import com.root.backend.review.ReviewService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -16,16 +18,18 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+@Tag(name = "리뷰관리API")
 @RestController
 @RequestMapping("/reviews")
 class ReviewController(private val rabbitTemplate: RabbitTemplate,
                        private val reviewService: ReviewService,
                        private val authService: AuthService) {
 
+    @Operation(summary = "리뷰받기")
     @PostMapping
     fun createReview(@RequestBody reviewData: Review): ResponseEntity<String> {
 
-//        val savedReviewId = reviewService.saveReceivedReview(reviewData)
+        val savedReviewId = reviewService.saveReceivedReview(reviewData)
 
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val currentDateTime = LocalDateTime.now().format(formatter)
@@ -36,13 +40,14 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
                 currentTime = currentDateTime
         )
 
-//        reviewService.sendReviewResponse(reviewResponse)
-//        rabbitTemplate.convertAndSend("review-response", reviewResponse)
+        reviewService.sendReviewResponse(reviewResponse)
+        rabbitTemplate.convertAndSend("review-response", reviewResponse)
 
         // 성공 응답 반환
         return ResponseEntity.ok("리뷰가 처리되었습니다. ID: ${reviewResponse.id}")
     }
 
+    @Operation(summary = "미답변 리뷰 페이징")
     @GetMapping("/unanswered")
     fun getReviewsByBrandName(
             @RequestHeader("Authorization") token: String,
@@ -62,6 +67,8 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.ok(response)
     }
 
+
+    @Operation(summary = "리뷰답변")
     @PutMapping("/{reviewId}/answer")
     fun updateReviewAnswer(
             @PathVariable reviewId: Long,
@@ -89,7 +96,7 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
                     )
                 }
             }
-//            reviewResponse?.let { it1 -> reviewService.sendReviewResponse(it1) }
+            reviewResponse?.let { it1 -> reviewService.sendReviewResponse(it1) }
             return ResponseEntity.ok("{\"message\": \"리뷰 답변이 업데이트 되었습니다.\"}")
         }
 
@@ -97,6 +104,8 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"리뷰를 업데이트할 수 없습니다.\"}")
     }
 
+
+    @Operation(summary = "답변완료 리뷰 페이징")
     @GetMapping("/answered")
     fun getAnsweredReviewsPaged(
         @RequestHeader("Authorization") token: String,
