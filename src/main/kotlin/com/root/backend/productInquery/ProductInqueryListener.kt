@@ -16,7 +16,6 @@ class ProductInqueryListener(private val productInqueryService: ProductInquerySe
         try {
             val inquery: ProductInquery = objectMapper.readValue(message)
             productInqueryService.saveReceivedInquery(inquery)
-            println("받은 문의: $inquery")
         } catch (e: Exception) {
             logger.error("Error processing inquery message: $message", e)
         }

@@ -18,12 +18,9 @@ class ReviewListener(private val reviewService: ReviewService) {
         try {
             val review: Review = objectMapper.readValue(message)
             reviewService.saveReceivedReview(review)
-            println("Received Review: $review")
         } catch (e: Exception) {
-            println("Error processing review: ${e.message}")
             logger.error("Error processing review", e)
         }
     }
-
 
 }
