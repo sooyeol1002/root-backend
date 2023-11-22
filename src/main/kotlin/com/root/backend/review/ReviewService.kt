@@ -70,7 +70,7 @@ class ReviewService(private val rabbitTemplate: RabbitTemplate,
 
     fun selectReviewById(reviewId: Long): Review? {
         val sql = "SELECT * FROM review WHERE id = ?"
-        return jdbcTemplate.query(sql, reviewRowMapper, reviewId).firstOrNull()
+        return jdbcTemplate.query(sql, reviewRowMapper, reviewId).singleOrNull()
     }
 
     fun findReviewsByBrandNameWithPaging(brandName: String, page: Int, size: Int): PagedReviews {

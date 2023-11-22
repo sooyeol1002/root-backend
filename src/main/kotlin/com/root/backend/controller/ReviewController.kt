@@ -29,19 +29,15 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
     @PostMapping
     fun createReview(@RequestBody reviewData: Review): ResponseEntity<String> {
 
-        val savedReviewId = reviewService.saveReceivedReview(reviewData)
-
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val currentDateTime = LocalDateTime.now().format(formatter)
         val reviewResponse = ReviewResponse(
                 id = reviewData.receivedId,
                 productId = reviewData.productId,
                 reviewAnswer = null,
-                currentTime = currentDateTime
         )
 
+        println("Sending review response to RabbitMQ: $reviewResponse")
         reviewService.sendReviewResponse(reviewResponse)
-        rabbitTemplate.convertAndSend("review-response", reviewResponse)
+//        rabbitTemplate.convertAndSend("review-response", reviewResponse)
 
         // 성공 응답 반환
         return ResponseEntity.ok("리뷰가 처리되었습니다. ID: ${reviewResponse.id}")
@@ -74,33 +70,40 @@ class ReviewController(private val rabbitTemplate: RabbitTemplate,
             @PathVariable reviewId: Long,
             @RequestBody reviewAnswerDTO: ReviewAnswerDTO
     ): ResponseEntity<String> {
-        val existingReview = reviewService.selectReviewById(reviewId)
 
-        var updatedReview: ReviewDto? = null
         transaction {
             Reviews.update({ Reviews.id eq reviewId }) {
                 it[reviewAnswer] = reviewAnswerDTO.reviewAnswer
             }
-            updatedReview = existingReview?.toReviewDto()
         }
 
-        // 업데이트된 리뷰가 있으면 RabbitMQ로 전송
+
+        val updatedReview = reviewService.selectReviewById(reviewId)?.toReviewDto()
+        println("Updated Review: $updatedReview")
+
+
         updatedReview?.let {
+            println("Review Answer: ${it.reviewAnswer}")
+
             val reviewResponse = it.reviewAnswer?.let { it1 ->
-                it.currentTime?.let { it2 ->
-                    ReviewResponse(
-                            productId = it.productId,
-                            id = it.receivedId,
-                            currentTime = it2,
-                            reviewAnswer = it1
-                    )
-                }
+                ReviewResponse(
+                        productId = it.productId,
+                        id = it.receivedId,
+                        reviewAnswer = it1
+                )
             }
-            reviewResponse?.let { it1 -> reviewService.sendReviewResponse(it1) }
+            println("ReviewResponse object: $reviewResponse")
+
+
+            if (reviewResponse != null) {
+                println("Sending review response to RabbitMQ: $reviewResponse")
+                reviewService.sendReviewResponse(reviewResponse)
+            } else {
+                println("Review response is null, not sending to RabbitMQ")
+            }
             return ResponseEntity.ok("{\"message\": \"리뷰 답변이 업데이트 되었습니다.\"}")
         }
 
-        // 리뷰 업데이트에 실패했다면 에러 메시지 반환
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"리뷰를 업데이트할 수 없습니다.\"}")
     }
 

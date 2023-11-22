@@ -106,7 +106,6 @@ data class ReviewResponse(
         val productId: Long,
         val id: Long,
         val reviewAnswer: String?,
-        val currentTime: String
 )
 
 data class InqueryResponse(
